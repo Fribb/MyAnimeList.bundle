@@ -1,28 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
-	<dict>
-		<key>CFBundleIdentifier</key>
-		<string>net.devvsbugs.coding.plex.myanimelist</string>
-		<key>PlexFrameworkVersion</key>
-		<string>2</string>
-		<key>PlexPluginClass</key>
-		<string>Agent</string>
-		<key>PlexAgentAttributionText</key>
-		<string>
-			&lt;a href=&quot;http://myanimelist.net&quot;&gt;MyAnimelist.net&lt;/a&gt; PMS Metadata Agent&lt;br/&gt;
-			Developed by Daraku &lt;a href=&quot;http://devvsbugs.net&quot;&gt;devvsbugs.net&lt;/a&gt; &lt;br/&gt;
-			&lt;br/&gt;
-			&lt;a href=&quot;http://myanimelist.net&quot;&gt;MyAnimelist.net&lt;/a&gt; was created by an anime fan, for anime fans. 
-			It was designed from the ground up to give the user a quick and 
-			no-hassle way to catalog their anime or manga collection. 
-			Over 40,000 users sign in every day to help build the world's 
-			largest social anime and manga database and community.
-			MyAnimeList targets users of all varieties in an effort 
-			to provide personalized suggestions, to connect users who share similar tastes, 
-			to provide detailed anime or manga information, and much more. 
-			Created and actively maintained by Garrett Gyssler, MyAnimeList is a 
-			community run entirely by its moderators and users from all over the world. 
+<dict>
+	<key>CFBundleIdentifier</key>
+	<string>net.fribbtastic.coding.plex.myanimelist</string>
+	<key>PlexAgentAttributionText</key>
+	<string>
+		Developed by Fribb: &lt;a href=&quot;coding.fribbtastic.net&quot;&gt;fribbtastic.net&lt;/a&gt;&lt;br/&gt;
+		&lt;a href=&quot;http://myanimelist.net&quot;&gt;MyAnimelist.net&lt;/a&gt; was created by an anime fan, for anime fans. 
+		It was designed from the ground up to give the user a quick and 
+		no-hassle way to catalog their anime or manga collection. 
+		Over 40,000 users sign in every day to help build the world's 
+		largest social anime and manga database and community.
+		MyAnimeList targets users of all varieties in an effort 
+		to provide personalized suggestions, to connect users who share similar tastes, 
+		to provide detailed anime or manga information, and much more. 
+		Created and actively maintained by Garrett Gyssler, MyAnimeList is a 
+		community run entirely by its moderators and users from all over the world.
 	</string>
+	<key>PlexFrameworkVersion</key>
+	<string>2</string>
+	<key>PlexPluginClass</key>
+	<string>Agent</string>
+	<key>PlexPluginCodePolicy</key>
+	<string>Elevated</string>
 </dict>
 </plist>

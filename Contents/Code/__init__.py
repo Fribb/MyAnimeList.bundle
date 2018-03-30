@@ -1,471 +1,363 @@
-import sys
-import os
-import urllib2
-import base64
-import difflib
+'''
+Created on 23.03.2018
+
+Plex Media Server Metadata Agent for MyAnimeList.net
+
+This Agent will look up the title of the Anime and get the Metadata for the ID.
+The Metadata will be cached in Plex for 1 Day
+
+@author: Fribb http://coding.fribbtastic.net/
+'''
+import re
 from datetime import datetime
 
-SEARCH_URL = "http://daraku-mal-api.net/services/v2/search/"
-DETAIL_URL = "http://daraku-mal-api.net/services/v2/anime/"
+'''
+The Constants 
+'''
+AGENT_NAME = "MyAnimeList.net"
+AGENT_VERSION = "v6.0.0"
+AGENT_LANGUAGES = [Locale.Language.English]
+AGENT_PRIMARY_PROVIDER = True
+AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles' ]
+AGENT_SEARCH_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/search?q={title}"
+AGENT_DETAIL_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/{id}"
+AGENT_EPISODE_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/episodes/{id}"
+AGENT_CACHE_TIME = CACHE_1DAY
 
 def Start():
-  Log("[MyAnimeList]: Starting MyAnimeList.net Agent")
-  HTTP.CacheTime = CACHE_1DAY
+    Log.Info("[" + AGENT_NAME + "] " + "Starting MyAnimeList.net Metadata Agent " + AGENT_VERSION)
 
+def ValidatePrefs():
+    Log.Info("[" + AGENT_NAME + "] There is nothing to validate")
+
+### Agent Declaration for TV-Shows
+class MyAnimeList_TV(Agent.TV_Shows):
+    # initialize configuration
+    name = AGENT_NAME
+    languages = AGENT_LANGUAGES
+    primary_provider = AGENT_PRIMARY_PROVIDER
+    accepts_from = AGENT_ACCEPTS_FROM
+    
+    def search(self, results, media, lang, manual):
+        doSearch(results, media, lang, "tv")
+        return
+    
+    def update(self, metadata, media, lang, force):
+        doUpdateShow(metadata, media, lang)
+        return
+
+### Agent declaration for Movies
+class MyAnimeList_Movie(Agent.Movies):
+    # initialize configuration
+    name = AGENT_NAME
+    languages = AGENT_LANGUAGES
+    primary_provider = AGENT_PRIMARY_PROVIDER
+    accepts_from = AGENT_ACCEPTS_FROM
+    
+    def search(self, results, media, lang, manual):
+        doSearch(results, media, lang, "movie")
+        return
+    
+    def update(self, metadata, media, lang, force):
+        doUpdateMovie(metadata, media, lang)
+        return
+    
+### Method to search for an Anime on the API 
 def doSearch(results, media, lang, mediaType):
-
-  Log("[MyAnimeList]: Entered doSearch")
-  Log("[MyAnimeList]: Searching for Anime...")
-  
-  # Init variables
-  if mediaType == "tvshow":
-    showName = media.show.encode('unicode_escape').encode('ascii').replace("\u2605", " ")
-  elif mediaType == "movie":
-    showName = media.name
-  animeId = None
-  animeTitle = None
-  animeYear = None
-  animeMatchScore = None
-  
-  # Build URL
-  searchURL = SEARCH_URL + String.Quote(showName, usePlus=True)
-  Log("[MyAnimeList]: Requesting results from: " + searchURL)
-  
-  # Request Data  
-  xmlResults = XML.ObjectFromURL(searchURL)
-  
-  # parse Data and add to results
-  for i in range(len(xmlResults.xpath("//anime"))):
-    Log("[MyAnimeList]: ---- Search Entry ----")
-
-    try:
-      animeId = xmlResults.xpath("//anime[%i]/id//text()" % (i + 1) )[0]
-      Log("[MyAnimeList]: Anime ID: " + animeId)
-    except:
-      animeId = None
-      Log("[MyAnimeList]: Anime ID: Not Available") 
-
-    try:
-      animeTitle = xmlResults.xpath("//anime[%i]/title//text()" % (i + 1) )[0]
-      Log("[MyAnimeList]: Anime Title: " + animeTitle)
-    except:
-      animeTitle = None
-      Log("[MyAnimeList]: Anime Title: Not Available")
+    Log.Info("[" + AGENT_NAME + "] " + "Searching for Anime")
     
-    try:
-      animeYear = xmlResults.xpath("//anime[%i]/airedStart//text()" % (i + 1) )[0].split("-")[0]
-      Log("[MyAnimeList]: Anime Year: " + animeYear)
-    except:
-      animeYear = None
-      Log("[MyAnimeList]: Anime Year: Not Available")
+    # Initialize variables
+    mediaName = None
+    searchURL = None
+    jsonResponse = None
+    apiAnimeId = None
+    apiAnimeTitle = None
+    apiAnimeYear = None
+    animeMatchScore = None
     
-    try:
-      animeMatchScore = int(100 - abs(String.LevenshteinDistance(animeTitle, showName)))
-      Log("[MyAnimeList]: Anime Match Score: " + str(animeMatchScore))
-    except:
-      animeMatchScore = None
-      Log("[MyAnimeList]: Anime Match Score: Not Available")
+    # check on mediaType if it is tv or movie
+    if mediaType == "tv":
+        mediaName = removeASCII(media.show)
+    elif mediaType == "movie":
+        mediaName = removeASCII(media.name)
+    else:
+        Log.Error("[" + AGENT_NAME + "] " + "No mediaType defined, don't know which name to pick")
     
-    Log("[MyAnimeList]: ---- Entry End ----")
-
-    Log("[MyAnimeList]: Add Entry to Results")
-    results.Append(MetadataSearchResult(id = animeId, name = animeTitle, year = animeYear, score = animeMatchScore, lang = Locale.Language.English))
-  
-  Log("[MyAnimeList]: Search Completed")
-  
-  return
-
-# ---------- TV_Shows ----------
-
-def doUpdateTVShow(metadata, media, lang):
-
-  Log("[MyAnimeList]: Entered doUpdateTVShow")
-  Log("[MyAnimeList]: Requesting Data for Anime: " + metadata.id)
-  
-  # Init variables
-  anime = None				# root object
-  animeId = None			# metadata.id
-  animeTitle = None			# metadata.title
-  animeSynopsis = None		# metadata.summary
-  animeScore = None			# metadata.rating
-  animeAired = None			# metadata.originally_available_at
-  animeRating = None		# metadata.content_rating
-  animeCovers = None		# metadata.posters
-  animeDuration = None		# metadata.duration
-  animeGenres = None		# metadata.genres
-  animeProducers = None		# metadata.studio
-  animeBackgrounds = None	# metadata.art
-  animeEpisodes = None		# metadata.seasons[*].episodes
-  animeBanners = None		# metadata.banners
-  
-  # Build URL
-  detailURL = DETAIL_URL + String.Quote(metadata.id, usePlus=True)
-  Log("[MyAnimeList]: Request Results from: " + detailURL)
-  
-  # Request Data
-  xmlResults = XML.ObjectFromURL(detailURL)
-
-  # Parse Data and add to Metadata
-  for i in range(len(xmlResults.xpath("//anime"))):
-
-    Log("[MyAnimeList]: ---- Anime Entry ----")
+    # build search URL
+    searchURL = AGENT_SEARCH_URL.format(title=String.Quote(mediaName, usePlus=True))
+    Log.Debug("[" + AGENT_NAME + "] " + "Search URL: " + searchURL)
     
-    anime = xmlResults.xpath("//anime[%i]" % (i+1))[0]
-
-    # parse and add anime id
+    # retrieve Response from API for the Search
     try:
-      animeId = str(anime['id'])
-      Log("[MyAnimeList]: ID: " + animeId)
-      metadata.id = animeId
-    except Exception, e:
-      Log("[MyAnimeList]: ID Not Available or could not add to metadata")
-      Log("[MyAnimeList]: ID ERROR: " + str(e))
-
-    # parse and add anime title
-    try:
-      animeTitle = anime['title']
-      Log("[MyAnimeList]: Title: " + animeTitle)
-      metadata.title = animeTitle
-    except Exception, e:
-      Log("[MyAnimeList]: Title: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: TITLE ERROR: " + str(e))
-
-    # parse and add anime synopsis
-    try:
-      animeSynopsis = anime['synopsis']
-      Log("[MyAnimeList]: Synopsis: " + animeSynopsis)
-      metadata.summary = animeSynopsis
-    except Exception, e:
-      Log("[MyAnimeList]: Synopsis: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: SYNOPSIS ERROR: " + str(e))
-
-    # parse and add anime score
-    try:
-      animeScore = float(anime['score'])
-      Log("[MyAnimeList]: Score: " + str(animeScore))
-      metadata.rating = animeScore
-    except Exception, e:
-      Log("[MyAnimeList]: Score: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: SCORE ERROR: " + str(e))
-
-    # parse and add anime date
-    try:
-      animeAired = datetime.strptime(str(anime['airedStart']).split("T")[0], "%Y-%m-%d")
-      Log("[MyAnimeList]: Aired: " + str(animeAired))
-      metadata.originally_available_at = animeAired
-    except Exception, e:
-      Log("[MyAnimeList]: Aired: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: AIRED ERROR: " + str(e))
-
-    # parse and add anime rating
-    try:
-      animeRating = anime['rating']
-      Log("[MyAnimeList]: Rating: " + animeRating)
-      metadata.content_rating = animeRating
-    except Exception, e:
-      Log("[MyAnimeList]: Rating: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: RATING ERROR: " + str(e))
-
-    # parse and add anime covers
-    try:
-      animeCovers = anime['cover']['url']
-      coverPrefs = Prefs['cover']
-      Log("[MyAnimeList]: Download Cover Images: " + coverPrefs)
-      
-      i = 0
-      for cover in animeCovers:
-        if i != coverPrefs or coverPrefs == "all available":
-          Log("[MyAnimeList]: Cover: " + cover)
-          metadata.posters[str(cover)] = Proxy.Media(HTTP.Request(str(cover)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Cover: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: COVER ERROR: " + str(e))
-
-    # parse and add anime duration
-    try:
-      animeDuration = int(anime['duration'])
-      Log("[MyAnimeList]: Duration: " + str(animeDuration))
-      metadata.duration = animeDuration
-    except Exception, e:
-      Log("[MyAnimeList]: Duration: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: DURATION ERROR: " + str(e))
-
-    # parse and add anime genres
-    try:
-      animeGenres = anime['genre']['name']
-      for genre in animeGenres:
-        Log("[MyAnimeList]: Genre: " + genre)
-        metadata.genres.add(genre)
-    except Exception, e:
-      Log("[MyAnimeList]: Genres: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: GENRES ERROR: " + str(e))
-
-    # parse and add anime producers
-    try:
-      animeProducers = anime['producer']['name']
-      animeStudio = ""
-      for producer in animeProducers:
-        if animeStudio != "":
-          animeStudio += ", "
-        Log("[MyAnimeList]: Producer: " + producer)
-        animeStudio += producer
-      metadata.studio = animeStudio
-    except Exception, e:
-      Log("[MyAnimeList]: Producers: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: PRODUCERS ERROR: " + str(e))
-
-    # parse and add anime backgrounds
-    try:
-      animeBackgrounds = anime['background']['url']
-      backgroundPrefs = Prefs['background']
-      Log("[MyAnimeList]: Download Background Images: " + backgroundPrefs)
-      
-      i = 0
-      for background in animeBackgrounds:
-        if i != backgroundPrefs or backgroundPrefs == "all available":
-          Log("[MyAnimeList]: Background: " + background)
-          metadata.art[str(background)] = Proxy.Media(HTTP.Request(str(background)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Backgrounds: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: BACKGROUNDS ERROR: " + str(e))
-
-    # parse and add anime banner
-    try:
-      animeBanners = anime['banner']['url']
-      bannerPrefs = Prefs['banner']
-      Log("[MyAnimeList]: Download Banner Images: " + bannerPrefs)
-      
-      i = 0
-      for banner in animeBanners:
-        if i != bannerPrefs or bannerPrefs == "all available":
-          Log("[MyAnimeList]: Banners " + banner)
-          metadata.banners[str(banner)] = Proxy.Media(HTTP.Request(str(banner)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Banners: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: BANNERS ERROR: " + str(e))
-
-    # parse and add anime episodes
-    try:
-      animeEpisodes = anime['episodeList']['episodes']
-      Log("[MyAnimeList]: Episodes: " + str(len(animeEpisodes)))
-      for ep in animeEpisodes:
-        episode = metadata.seasons[1].episodes[int(ep['number'])]
-        episode.originally_available_at = datetime.strptime(str(ep['aired']), "%Y-%m-%d")
-        episode.title = ep['name']
-    except Exception, e:
-      Log("[MyAnimeList]: Episodes: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: EPISODES ERROR: " + str(e))
-      Log("[MyAnimeList]: using airedStart date as episode originally_available_at date")
-      for seasonNumber in media.seasons:
-        for episodeNumber in media.seasons[seasonNumber].episodes:
-          episode = metadata.seasons[seasonNumber].episodes[episodeNumber]
-          episode.originally_available_at = animeAired
-          episode.title = "Episode " + episodeNumber
-
-    Log("[MyAnimeList]: ---- Entry End ----")
-
-  return
-
-# ---------- Movies ----------
-
-def doUpdateMovies(metadata, media, lang):
-
-  Log("[MyAnimeList]: Entered doUpdateMovies")
-  Log("[MyAnimeList]: Requesting Data for Anime: " + metadata.id)
-  
-  # Init variables
-  animeId = None			# metadata.id
-  animeTitle = None			# metadata.title
-  animeSynopsis = None		# metadata.summary
-  animeScore = None			# metadata.rating
-  animeAired = None			# metadata.originally_available_at
-  animeRating = None		# metadata.content_rating
-  animeCovers = None		# metadata.posters
-  animeDuration = None		# metadata.duration
-  animeGenres = None		# metadata.genres
-  animeProducers = None		# metadata.studio
-  animeBackgrounds = None	# metadata.art
-  animeBanners = None		# metadata.banners
-  
-  # Build URL
-  detailURL = DETAIL_URL + String.Quote(metadata.id, usePlus=True)
-  Log("[MyAnimeList]: Request Results from: " + detailURL)
-  
-  # Request Data
-  xmlResults = XML.ObjectFromURL(detailURL)
-  
-  # Parse Data and add to Metadata
-  for i in range(len(xmlResults.xpath("//anime"))):
-
-    Log("[MyAnimeList]: ---- Anime Entry ----")
+        jsonResponse = JSON.ObjectFromURL(searchURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        
+        Log.Debug(jsonResponse)
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + str(e))
+        return
     
-    anime = xmlResults.xpath("//anime[%i]" % (i+1))[0]
-
-    # parse and add anime id
-    try:
-      animeId = str(anime['id'])
-      Log("[MyAnimeList]: ID: " + animeId)
-      metadata.id = animeId
-    except Exception, e:
-      Log("[MyAnimeList]: ID Not Available or could not add to metadata")
-      Log("[MyAnimeList]: ID ERROR: " + str(e))
-
-    # parse and add anime title
-    try:
-      animeTitle = anime['title']
-      Log("[MyAnimeList]: Title: " + animeTitle)
-      metadata.title = animeTitle
-    except Exception, e:
-      Log("[MyAnimeList]: Title: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: TITLE ERROR: " + str(e))
-
-    # parse and add anime synopsis
-    try:
-      animeSynopsis = anime['synopsis']
-      Log("[MyAnimeList]: Synopsis: " + animeSynopsis)
-      metadata.summary = animeSynopsis
-    except Exception, e:
-      Log("[MyAnimeList]: Synopsis: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: SYNOPSIS ERROR: " + str(e))
-
-    # parse and add anime score
-    try:
-      animeScore = float(anime['score'])
-      Log("[MyAnimeList]: Score: " + str(animeScore))
-      metadata.rating = animeScore
-    except Exception, e:
-      Log("[MyAnimeList]: Score: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: SCORE ERROR: " + str(e))
-
-    # parse and add anime date
-    try:
-      animeAired = datetime.strptime(str(anime['airedStart']).split("T")[0], "%Y-%m-%d")
-      Log("[MyAnimeList]: Aired: " + str(animeAired))
-      metadata.originally_available_at = animeAired
-    except Exception, e:
-      Log("[MyAnimeList]: Aired: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: AIRED ERROR: " + str(e))
-
-    # parse and add anime rating
-    try:
-      animeRating = anime['rating']
-      Log("[MyAnimeList]: Rating: " + animeRating)
-      metadata.content_rating = animeRating
-    except Exception, e:
-      Log("[MyAnimeList]: Rating: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: RATING ERROR: " + str(e))
-
-    # parse and add anime covers
-    try:
-      animeCovers = anime['cover']['url']
-      coverPrefs = Prefs['cover']
-      Log("[MyAnimeList]: Download Cover Images: " + coverPrefs)
-      
-      i = 0
-      for cover in animeCovers:
-        if i != coverPrefs or coverPrefs == "all available":
-          Log("[MyAnimeList]: Cover: " + cover)
-          metadata.posters[str(cover)] = Proxy.Media(HTTP.Request(str(cover)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Cover: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: COVER ERROR: " + str(e))
-
-    # parse and add anime duration
-    try:
-      animeDuration = int(anime['duration'])
-      Log("[MyAnimeList]: Duration: " + str(animeDuration))
-      metadata.duration = animeDuration
-    except Exception, e:
-      Log("[MyAnimeList]: Duration: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: DURATION ERROR: " + str(e))
-
-    # parse and add anime genres
-    try:
-      animeGenres = anime['genre']['name']
-      for genre in animeGenres:
-        Log("[MyAnimeList]: Genre: " + genre)
-        metadata.genres.add(genre)
-    except Exception, e:
-      Log("[MyAnimeList]: Genres: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: GENRES ERROR: " + str(e))
-
-    # parse and add anime producers
-    try:
-      animeProducers = anime['producer']['name']
-      animeStudio = ""
-      for producer in animeProducers:
-        if animeStudio != "":
-          animeStudio += ", "
-        Log("[MyAnimeList]: Producer: " + producer)
-        animeStudio += producer
-      metadata.studio = animeStudio
-    except Exception, e:
-      Log("[MyAnimeList]: Producers: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: PRODUCERS ERROR: " + str(e))
-
-    # parse and add anime backgrounds
-    try:
-      animeBackgrounds = anime['background']['url']
-      backgroundPrefs = Prefs['background']
-      Log("[MyAnimeList]: Download Background Images: " + backgroundPrefs)
-      
-      i = 0
-      for background in animeBackgrounds:
-        if i != backgroundPrefs or backgroundPrefs == "all available":
-          Log("[MyAnimeList]: Background: " + background)
-          metadata.art[str(background)] = Proxy.Media(HTTP.Request(str(background)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Backgrounds: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: BACKGROUNDS ERROR: " + str(e))
-
-    # parse and add anime banner
-    try:
-      animeBanners = anime['banner']['url']
-      bannerPrefs = Prefs['banner']
-      Log("[MyAnimeList]: Download Banner Images: " + bannerPrefs)
-      
-      i = 0
-      for banner in animeBanners:
-        if i != bannerPrefs or bannerPrefs == "all available":
-          Log("[MyAnimeList]: Banners " + banner)
-          metadata.banners[str(banner)] = Proxy.Media(HTTP.Request(str(banner)).content)
-        i += 1
-    except Exception, e:
-      Log("[MyAnimeList]: Banners: Not Available or could not add to metadata")
-      Log("[MyAnimeList]: BANNERS ERROR: " + str(e))
+    # iterate over responses
+    for series in jsonResponse:
+        Log.Debug("Matches Found: ")
+        # get the ID if it is available
+        apiAnimeId = str(getJSONValue("id", series))
+        
+        # get the title if it is available
+        apiAnimeTitle = str(getJSONValue("title", series))
+        
+        # get the year if it is available
+        apiAnimeYear = str(getJSONValue("start_date", series)).split("-")[0]       
+        
+        # calculate the match score
+        if len(apiAnimeTitle) > 0:
+            animeMatchScore = int(100 - abs(String.LevenshteinDistance(apiAnimeTitle, mediaName)))
+            Log.Debug("Matchscore: " + str(animeMatchScore))
+        
+        # append results to search results
+        Log.Info("[" + AGENT_NAME + "] " + "Anime Found - ID=" + str(apiAnimeId) + " Title=" + str(apiAnimeTitle) + " Year=" + str(apiAnimeYear) + " MatchScore=" + str(animeMatchScore))
+        results.Append(MetadataSearchResult(id=apiAnimeId, name=apiAnimeTitle, year=apiAnimeYear, score=animeMatchScore, lang=lang))
+        
+    Log.Info("[" + AGENT_NAME + "] " + "Anime search completed")
     
-  return
-
-class MyAnimeListAgentTV(Agent.TV_Shows):
-  name = "MyAnimeList.net"
-  languages = [Locale.Language.English]
-  primary_provider = True
-  accepts_from = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles', 'com.plexapp.agents.thetvdb' ]
-  
-  def search(self, results, media, lang):
-    doSearch(results, media, lang, "tvshow")
-    return
-  
-  def update(self, metadata, media, lang):
-    doUpdateTVShow(metadata, media, lang)
     return
 
-
-class MyAnimeListAgentMovies(Agent.Movies):
-  name = "MyAnimeList.net"
-  languages = [Locale.Language.English]
-  primary_provider = True
-  accepts_from = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles', 'com.plexapp.agents.themoviedb' ]
-  
-  def search(self, results, media, lang):
-    doSearch(results, media, lang, "movie")
+### Method to update the Anime Series metadata
+def doUpdateShow(metadata, media, lang):
+    Log.Info("[" + AGENT_NAME + "] " + "Updating Metadata for Series " + metadata.id)
+    
+    # initialize variables
+    detailURL = None
+    episodesURL = None
+    jsonResponse = None
+    apiAnimeId = metadata.id
+    apiAnimeEpisodeCount = None     # the number of Episodes of the Anime (episodes)
+    
+    '''
+    Load Data for Show
+    '''
+    # build detail URL
+    detailURL = AGENT_DETAIL_URL.format(id=metadata.id)
+    Log.Debug("[" + AGENT_NAME + "] " + "Detail URL: " + detailURL)
+    
+    # retrieve Response from the API for the Anime
+    try:
+        jsonResponse = JSON.ObjectFromURL(detailURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        
+        Log.Debug(jsonResponse)
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + str(e))
+        return
+    
+    # parse the elements of the response
+    parseElements(jsonResponse, metadata)
+    
+    # get the number of episodes if it is available
+    apiAnimeEpisodeCount = getJSONValue("episodes", jsonResponse)
+    Log.Debug("Episode Count: " + str(apiAnimeEpisodeCount))
+    if apiAnimeEpisodeCount is not None:
+        metadata.seasons[1].episode_count = int(apiAnimeEpisodeCount)
+    
+    
+    '''
+    Load Data for Episodes
+    '''
+    jsonResponse = None
+    
+    # build episodes URL
+    episodesURL = AGENT_EPISODE_URL.format(id=apiAnimeId)
+    Log.Debug("[" + AGENT_NAME + "] " + "Episode URL: " + episodesURL)
+    
+    # retrieve Response from the API for the Episodes
+    try:
+        jsonResponse = JSON.ObjectFromURL(episodesURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        
+        Log.Debug(jsonResponse)
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + str(e))
+        return
+    
+    # iterate over all episodes
+    for episode in jsonResponse:
+        apiEpisodeNumber = None
+        apiEpisodeTitle = None
+        apiEpisodeAirDate = None
+        
+        # get the number if it is available
+        apiEpisodeNumber = getJSONValue("number", episode)
+        Log.Debug("Episode Number: " + str(apiEpisodeNumber))
+        
+        apiEpisodeTitle = getJSONValue("title", episode)
+        Log.Debug("Episode Title: " + str(apiEpisodeTitle))
+        
+        tmp_airDate = getJSONValue("air_date", episode)
+        if tmp_airDate is not None:
+            apiEpisodeAirDate = datetime.strptime(str(tmp_airDate), "%Y-%m-%d")
+        Log.Debug("Episode Air Date: " + str(apiEpisodeAirDate))
+        
+        # add metadata only when episode number is available
+        if apiEpisodeNumber is not None:
+            # get the episode in plex
+            plexEpisode = metadata.seasons[1].episodes[int(apiEpisodeNumber)]
+            
+            # create default title
+            default_title = "Episode: " + str(apiEpisodeNumber)
+            
+            if apiEpisodeTitle is not None:
+                plexEpisode.title = apiEpisodeTitle
+            else:
+                plexEpisode.title = default_title
+            
+            # create default air date
+            default_date = datetime.now()
+            
+            if apiEpisodeAirDate is not None:
+                plexEpisode.originally_available_at = apiEpisodeAirDate
+            else :
+                plexEpisode.originally_available_at = default_date
+        
+        Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(plexEpisode.title) + " - " + str(plexEpisode.originally_available_at))
+    
+    Log.Info("Show Update completed")
     return
-  
-  def update(self, metadata, media, lang):
-    doUpdateMovies(metadata, media, lang)
+
+### Method to update the Anime Movie metadata
+def doUpdateMovie(metadata, media, lang):
+    Log.Info("[" + AGENT_NAME + "] " + "Updating Metadata for Movie " + metadata.id)
+    
+    # initialize variables
+    detailURL = None
+    apiAnimeId = metadata.id
+        
+    '''
+    Load Data for Movie
+    '''
+    # build detail URL
+    detailURL = AGENT_DETAIL_URL.format(id=apiAnimeId)
+    Log.Debug("[" + AGENT_NAME + "] " + "Detail URL: " + detailURL)
+    
+    # retrieve Response from the API for the Anime
+    try:
+        jsonResponse = JSON.ObjectFromURL(detailURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        
+        Log.Debug(jsonResponse)
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + str(e))
+        return
+    
+    # parse the elements of the response
+    parseElements(jsonResponse, metadata)
+    
+    Log.Info("Movie Update completed")
+    
+    return
+
+### Method to remove all ASCII from the text
+def removeASCII(text):
+    return re.sub(r'[^\x00-\x7F]+',' ', text)
+
+### Method to get the JSON value of a key
+def getJSONValue(key, json):
+    value = None
+    
+    if key in json:
+        value = json[key]
+    else:
+        Log.Debug(str(key) + ": NA")
+    
+    return value
+
+### Method to remove all HTML tags from a string
+def cleanText(raw):
+    regex = re.compile('<.*?>')
+    
+    cleantext = re.sub(regex, '', raw)
+    
+    return cleantext
+
+def parseElements(jsonResponse, metadata):
+    
+    # initialize variables
+    apiAnimeId = None               # the ID of the Anime (id)
+    apiAnimeTitle = None            # the Title of the Anime (title)
+    apiAnimeSummary = None          # the summary of the Anime (synopsis)
+    apiAnimeRating = None           # the rating of the Anime (members_score)
+    apiAnimeAvailableAt = None      # the original available at date of the Anime (start_date)
+    apiAnimeContentRating = None    # the content rating of the Anime (classification)
+    apiAnimeCovers = None          # the cover pictures of the Anime (image_url)
+    apiAnimeDuration = None         # the duration of the Anime (duration)
+    apiAnimeGenres = None           # the genres of Anime (genres)
+    apiAnimeProducers = None        # the producers of the Anime (producers)
+    
+    # get the ID if it is available and distinguish with MAL identifier 
+    apiAnimeId = getJSONValue("id", jsonResponse)
+    Log.Debug("ID: " + str(apiAnimeId))
+    if apiAnimeId is not None:
+        metadata.id = str(apiAnimeId)
+    
+    # get the title if it is available
+    apiAnimeTitle = getJSONValue("title", jsonResponse)
+    Log.Debug("Title: " + str(apiAnimeTitle))
+    if apiAnimeTitle is not None and len(apiAnimeTitle) > 0:
+        metadata.title = str(apiAnimeTitle)
+    
+    # get the synopsis if it is available
+    apiAnimeSummary = cleanText(getJSONValue("synopsis", jsonResponse))
+    Log.Debug("Summary: " + str(apiAnimeSummary))
+    if apiAnimeSummary is not None:
+        metadata.summary = str(apiAnimeSummary)
+    
+    # get the score if it is available
+    apiAnimeRating = getJSONValue("members_score", jsonResponse)
+    Log.Debug("Rating: " + str(apiAnimeRating))
+    if apiAnimeRating is not None:
+        metadata.rating = apiAnimeRating
+    
+    # get the original available at date if it is available
+    tmp_year = getJSONValue("start_date", jsonResponse)
+    apiAnimeAvailableAt = datetime.strptime(str(tmp_year), "%Y-%m-%d")
+    Log.Debug("Year: " + str(apiAnimeAvailableAt))
+    if apiAnimeAvailableAt is not None:
+        metadata.originally_available_at = apiAnimeAvailableAt
+    
+    # get the content rating if it is available
+    apiAnimeContentRating = getJSONValue("classification", jsonResponse)
+    Log.Debug("Content Rating: " + str(apiAnimeContentRating))
+    if apiAnimeContentRating is not None:
+        metadata.content_rating = str(apiAnimeContentRating)
+    
+    # get the covers if they are available
+    apiAnimeCovers = getJSONValue("image_url", jsonResponse)
+    Log.Debug("Cover: " + str(apiAnimeCovers))
+    if apiAnimeCovers is not None:
+        metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers)).content)
+    
+    # get the duration if it is available
+    tmp_duration = getJSONValue("duration", jsonResponse)
+    apiAnimeDuration = tmp_duration * 60000
+    Log.Debug("Duration: " + str(apiAnimeDuration))
+    if apiAnimeDuration is not None:
+        metadata.duration = int(apiAnimeDuration)
+    
+    # get the genres if they are available
+    apiAnimeGenres = getJSONValue("genres", jsonResponse)
+    Log.Debug("Genres: " + str(apiAnimeGenres))
+    if apiAnimeGenres is not None and len(apiAnimeGenres) > 0:
+        for genre in apiAnimeGenres:
+            metadata.genres.add(str(genre))
+    
+    # get the producers if they are available
+    tmp_producers = getJSONValue("producers", jsonResponse)
+    Log.Debug("Producers: " + str(tmp_producers))
+    if tmp_producers is not None and len(tmp_producers) > 0:
+        apiAnimeProducers = ""
+        for idx, producer in enumerate(tmp_producers):
+            apiAnimeProducers += str(producer)
+            if idx < len(tmp_producers)-1:
+                apiAnimeProducers += ", "
+        
+        metadata.studio = str(apiAnimeProducers)
+    
+    # add tags
+    # metadata.tags.add("MyAnimeList.net")   
+    
     return
