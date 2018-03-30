@@ -28,5 +28,7 @@ The problem with this was that there was and is not an easy way to match somethi
 ### Support:
 
 For all support related or general questions please use the [thread in the official plex forums](https://forums.plex.tv/discussion/105054/release-myanimelist-net-metadata-agent/p1)
+
 For any issues like bugs, unintended behaviour please create a new Issue on the [github issue tracker](https://github.com/Fribb/MyAnimeList.bundle/issues)
+
 For development stages, release information, download link or anything else you can visit my [dev Blog here](https://coding.fribbtastic.net/projects/myanimelistagent/)
