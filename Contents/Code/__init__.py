@@ -176,6 +176,9 @@ def doUpdateShow(metadata, media, lang):
         Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + str(e))
         return
     
+    if "error" in jsonResponse:
+        Log.Error("[" + AGENT_NAME + "] " + "Error fetching JSON page: " + jsonResponse["error"] + " - " + str(e))
+    
     # iterate over all episodes
     for episode in jsonResponse:
         apiEpisodeNumber = None
