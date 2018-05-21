@@ -22,10 +22,31 @@ AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.open
 AGENT_SEARCH_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/search?q={title}"
 AGENT_DETAIL_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/{id}"
 AGENT_EPISODE_URL = "https://atarashii.fribbtastic.net/web/2.1/anime/episodes/{id}"
+AGENT_MAPPING_URL = "https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-lists/animeMapping_full.json"
 AGENT_CACHE_TIME = CACHE_1DAY
+AGENT_MAPPING_CACHE_TIME = CACHE_1WEEK
+AGENT_MAPPING = None
+
+AGENT_THETVDB_CACHE_TIME = CACHE_1DAY
+AGENT_THETVDB_API_KEY = "CE86D5F59D2835C2"
+AGENT_THETVDB_TOKEN = None
+AGENT_THETVDB_URL_MAIN = "https://www.thetvdb.com"
+AGENT_THETVDB_URL_API_MAIN = "https://api.thetvdb.com"
+AGENT_THETVDB_URL_LOGIN = "/login"
+AGENT_THETVDB_URL_SERIES = "/series/{id}/images"
+AGENT_THETVDB_URL_SERIES_QUERY = "/series/{id}/images/query?keyType={imageType}"
+AGENT_THETVDB_URL_BANNERS = "/banners/{image}"
+
+AGENT_THEMVOEIDB_CACHE_TIME = CACHE_1DAY
+AGENT_THEMVOEIDB_API_KEY = "f42adc8664ab008c7ea99b720c576213"
+AGENT_THEMVOEIDB_URL_MAIN = "https://api.themoviedb.org"
+AGENT_THEMVOEIDB_MOVIE = "/3/movie/{id}?api_key={api_key}"
 
 def Start():
     Log.Info("[" + AGENT_NAME + "] " + "Starting MyAnimeList.net Metadata Agent " + AGENT_VERSION)
+    HTTP.CacheTime = AGENT_CACHE_TIME
+    global AGENT_MAPPING
+    AGENT_MAPPING = JSON.ObjectFromString(HTTP.Request(AGENT_MAPPING_URL, cacheTime=AGENT_MAPPING_CACHE_TIME, sleep=2.0).content) ### TODO: Not caching (content type 'text/plain; charset=utf-8' not cacheable in Agent plug-ins)
 
 def ValidatePrefs():
     Log.Info("[" + AGENT_NAME + "] There is nothing to validate")
@@ -89,7 +110,7 @@ def doSearch(results, media, lang, mediaType):
     
     # retrieve Response from API for the Search
     try:
-        jsonResponse = JSON.ObjectFromURL(searchURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        jsonResponse = JSON.ObjectFromString(HTTP.Request(searchURL, sleep=2.0).content)
         
         Log.Debug(jsonResponse)
     except Exception as e:
@@ -141,7 +162,7 @@ def doUpdateShow(metadata, media, lang):
     
     # retrieve Response from the API for the Anime
     try:
-        jsonResponse = JSON.ObjectFromURL(detailURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        jsonResponse = JSON.ObjectFromString(HTTP.Request(detailURL, sleep=2.0).content)
         
         Log.Debug(jsonResponse)
     except Exception as e:
@@ -157,7 +178,6 @@ def doUpdateShow(metadata, media, lang):
     if apiAnimeEpisodeCount is not None:
         metadata.seasons[1].episode_count = int(apiAnimeEpisodeCount)
     
-    
     '''
     Load Data for Episodes
     '''
@@ -169,7 +189,7 @@ def doUpdateShow(metadata, media, lang):
     
     # retrieve Response from the API for the Episodes
     try:
-        jsonResponse = JSON.ObjectFromURL(episodesURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        jsonResponse = JSON.ObjectFromString(HTTP.Request(episodesURL, sleep=2.0).content)
         
         Log.Debug(jsonResponse)
     except Exception as e:
@@ -187,15 +207,15 @@ def doUpdateShow(metadata, media, lang):
         
         # get the number if it is available
         apiEpisodeNumber = getJSONValue("number", episode)
-        Log.Debug("Episode Number: " + str(apiEpisodeNumber))
+        #Log.Debug("Episode Number: " + str(apiEpisodeNumber))
         
         apiEpisodeTitle = getJSONValue("title", episode)
-        Log.Debug("Episode Title: " + str(apiEpisodeTitle))
+        #Log.Debug("Episode Title: " + str(apiEpisodeTitle))
         
         tmp_airDate = getJSONValue("air_date", episode)
         if tmp_airDate is not None:
             apiEpisodeAirDate = datetime.strptime(str(tmp_airDate), "%Y-%m-%d")
-        Log.Debug("Episode Air Date: " + str(apiEpisodeAirDate))
+        #Log.Debug("Episode Air Date: " + str(apiEpisodeAirDate))
         
         # add metadata only when episode number is available
         if apiEpisodeNumber is not None:
@@ -219,6 +239,40 @@ def doUpdateShow(metadata, media, lang):
                 plexEpisode.originally_available_at = default_date
         
         Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(plexEpisode.title) + " - " + str(plexEpisode.originally_available_at))
+        
+    '''
+    get the TheTVDB ID from the Mapping file (if available)
+    '''
+    mappingID = getMapping(metadata.id, "tv")
+    
+    if mappingID == None:
+        Log.Warn("[" + AGENT_NAME + "] " + "Mapping ID is not available")
+    else:
+        Log.Debug("[" + AGENT_NAME + "] " + "Mapping ID is " + str(mappingID))
+    
+    '''
+    get the image information from TheTVDB
+    '''
+    images = dict()
+    if mappingID != None:
+        images = loadImageInfoTheTVDB(mappingID)
+        
+        imageUrl = AGENT_THETVDB_URL_MAIN + AGENT_THETVDB_URL_BANNERS
+        
+        for poster in images["poster"]:
+            fileName = images["poster"][poster]
+            Log.Debug(fileName)
+            metadata.posters[str(fileName)] = Proxy.Media(HTTP.Request(str(imageUrl.format(image=fileName))).content)
+        
+        for background in images["background"]:
+            fileName = images["background"][background]
+            Log.Debug(fileName)
+            metadata.art[str(fileName)] = Proxy.Media(HTTP.Request(str(imageUrl.format(image=fileName))).content)
+        
+        for banner in images["banner"]:
+            fileName = images["banner"][banner]
+            Log.Debug(fileName)
+            metadata.banners[str(fileName)] = Proxy.Media(HTTP.Request(str(imageUrl.format(image=fileName))).content)
     
     Log.Info("Show Update completed")
     return
@@ -230,6 +284,7 @@ def doUpdateMovie(metadata, media, lang):
     # initialize variables
     detailURL = None
     apiAnimeId = metadata.id
+    jsonResponse = None
         
     '''
     Load Data for Movie
@@ -240,7 +295,7 @@ def doUpdateMovie(metadata, media, lang):
     
     # retrieve Response from the API for the Anime
     try:
-        jsonResponse = JSON.ObjectFromURL(detailURL, sleep=2.0, cacheTime=AGENT_CACHE_TIME)
+        jsonResponse = jsonResponse = JSON.ObjectFromString(HTTP.Request(detailURL, sleep=2.0).content)
         
         Log.Debug(jsonResponse)
     except Exception as e:
@@ -277,6 +332,7 @@ def cleanText(raw):
     
     return cleantext
 
+### Parse the elements that are similar for Movies and Shows
 def parseElements(jsonResponse, metadata):
     
     # initialize variables
@@ -361,6 +417,128 @@ def parseElements(jsonResponse, metadata):
         metadata.studio = str(apiAnimeProducers)
     
     # add tags
-    # metadata.tags.add("MyAnimeList.net")   
+    # metadata.tags.add("MyAnimeList.net")
+    
+    # TODO: Pull image data from TheMovieDB
     
     return
+
+### get the mapping for the MAL ID on TheTVDB or TheMovieDB
+def getMapping(metadataId, mediaType):
+    Log.Debug("[" + AGENT_NAME + "] " + "Searching for mapping for ID " + metadataId)
+    
+    if AGENT_MAPPING == None:
+        Log.Critical("[" + AGENT_NAME + "] " + "Mapping could not be loaded")
+        return None
+    
+    mappingString = None
+    mappingId = None
+    
+    if mediaType == "tv":
+        mappingString = "thetvdb_id"
+    elif mediaType == "movie":
+        mappingString = "themoviedb_id"
+    
+    for mapping in AGENT_MAPPING:
+        if "mal_id" in mapping:
+            malId = getJSONValue("mal_id", mapping)
+            
+            if str(malId) == metadataId:
+                if mappingString in mapping:
+                    mappingId = getJSONValue(mappingString, mapping)
+                    if mappingId == -1:
+                        Log.Debug("Mapping entry was available but ID is not a valid TheTVDB or TheMovieDB ID")
+                        return None
+                    Log.Info("[" + AGENT_NAME + "] " + "Mapping entry for ID found")
+                    return mappingId # don't need to search further if I already got the ID
+    
+    return mappingId
+
+### load the Token from TheTVDB
+def loadTheTVDBToken():
+    loginUrl = AGENT_THETVDB_URL_API_MAIN + AGENT_THETVDB_URL_LOGIN
+    try:
+        loginResponse = JSON.ObjectFromString(HTTP.Request(loginUrl, 
+                                                           data=JSON.StringFromObject(dict(apikey=AGENT_THETVDB_API_KEY)), 
+                                                           headers={'Content-type': 'application/json'}, 
+                                                           cacheTime=AGENT_THETVDB_CACHE_TIME, 
+                                                           sleep=2.0).content)
+    
+        Log.Debug(loginResponse)
+    
+        if "token" in loginResponse:
+            AGENT_THETVDB_TOKEN = loginResponse["token"]
+        
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Error authenticating with TheTVDB API: " + str(e))
+        return None
+
+### load the Image Information from TheTVDB for the specific ID
+def loadImageInfoTheTVDB(theTVDBID):
+    Log.Info("[" + AGENT_NAME + "] " + "Requesting Image Data from TheTVDB for ID: " + str(theTVDBID))
+    loginResponse = None
+    imagetypesUrl = AGENT_THETVDB_URL_API_MAIN + AGENT_THETVDB_URL_SERIES.format(id=theTVDBID)
+    imageTypes = dict()
+    images = dict()
+    
+    images["poster"] = dict()
+    images["background"] = dict()
+    images["banner"] = dict()
+    
+    # Authenticate with TheTVDB API if necessary
+    if AGENT_THETVDB_TOKEN is None:
+        loadTheTVDBToken()
+    
+    # get list of image types from TheTVDB API
+    try:
+        imageTypes = JSON.ObjectFromString(HTTP.Request(imagetypesUrl,
+                                                        headers={'Content-type': 'application/json'},
+                                                        cacheTime=AGENT_THETVDB_CACHE_TIME,
+                                                        sleep=2.0).content)
+        
+        Log.Debug(imageTypes)
+        
+    except Exception as e:
+        Log.Error("[" + AGENT_NAME + "] " + "Request failed, retrying with new token: " + str(e))
+         
+        loadTheTVDBToken()
+        
+        try:
+            imageTypes = JSON.ObjectFromString(HTTP.Request(imagetypesUrl,
+                                                            headers={'Content-type': 'application/json'},
+                                                            cacheTime=AGENT_THETVDB_CACHE_TIME,
+                                                            sleep=2.0).content)
+        except Exception as e:        
+            Log.Error("[" + AGENT_NAME + "] " + "Bad Image Type for ID: " + str(theTVDBID) + " - " + str(e))
+            return None
+    
+    for imageType in imageTypes["data"]:
+        imageQueryUrl = AGENT_THETVDB_URL_API_MAIN + AGENT_THETVDB_URL_SERIES_QUERY.format(id=theTVDBID, imageType=imageType)
+        
+        # request images only for poster, fanart (background and series (banner)
+        if imageType == "poster" or imageType == "fanart" or imageType == "series":
+            try:
+                imageData = JSON.ObjectFromString(HTTP.Request(imageQueryUrl,
+                                                                 headers={'Authorization': 'Bearer %s' % AGENT_THETVDB_TOKEN},
+                                                                 cacheTime=AGENT_THETVDB_CACHE_TIME,
+                                                                 sleep=2.0).content)
+                
+                for data in imageData["data"]:
+                    keyType = data["keyType"]
+                    fileName = data["fileName"]
+                    id = data["id"]
+                    subkey = None
+                    
+                    if keyType == "poster":
+                        subkey = "poster"
+                    elif keyType == "fanart":
+                        subkey = "background"
+                    elif keyType == "series":
+                        subkey = "banner"
+                    
+                    images[subkey][id] = fileName
+                    
+            except Exception as e:
+                Log.Error("[" + AGENT_NAME + "] " + "Error Requesting image for type: " + str(imageType) + " - " + str(e))
+    
+    return images
