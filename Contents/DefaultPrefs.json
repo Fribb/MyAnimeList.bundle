@@ -1,0 +1,41 @@
+[
+	{
+		"id": "getTheMovieDbImages",
+		"label": "Fetch Images for Movies from TheMovieDB: ",
+		"type": "bool",
+		"default": "true"
+	},
+	{
+		"id": "getTheTVDBImages",
+		"label": "Fetch Images for TV-Shows from TheTVDB: ",
+		"type": "bool",
+		"default": "true"
+	},
+	{
+		"id": "theMovieDbBackgroundSize",
+		"label": "Download Background images from TheMovieDB with Size (w=width, h=height): ",
+		"type": "enum",
+		"values": [
+			"w300",
+			"w780",
+			"w1280",
+			"original"
+		],
+		"default": "original"
+	},
+	{
+		"id": "theMovieDbPosterSize",
+		"label": "Download Poster images from TheMovieDB with Size (w=width, h=height): ",
+		"type": "enum",
+		"values": [
+			"w92",
+			"w154",
+			"w185",
+			"w342",
+			"w500",
+			"w780",
+			"original"
+		],
+		"default": "original"
+	}
+]
