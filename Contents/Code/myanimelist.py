@@ -34,10 +34,8 @@ class MyAnimeListUtils():
             Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(searchUrl))
             searchResults = JSON.ObjectFromString(HTTP.Request(searchUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
         except Exception as e:
-            Log.Info("[" + AGENT_NAME + "] " + "search results could not be requested" + str(e))
+            Log.Info("[" + AGENT_NAME + "] " + "search results could not be requested " + str(e))
             return
-        
-        #searchResults = JSON.ObjectFromString(utils.fetchContent(searchUrl, additionalHeaders=False, cacheTime=MYANIMELIST_CACHE_TIME))
         
         Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + str(len(searchResults)) + " Results found")
         for series in searchResults:            
@@ -52,7 +50,7 @@ class MyAnimeListUtils():
             
             # calculate the match score
             if len(apiAnimeTitle) > 0:
-                animeMatchScore = int(100 - abs(String.LevenshteinDistance(apiAnimeTitle, name)))
+                animeMatchScore = utils.getMatchScore(apiAnimeTitle, name)
             
             # append results to search results
             Log.Debug("[" + AGENT_NAME + "] " + "Anime Found - ID=" + str(apiAnimeId) + " Title=" + str(apiAnimeTitle) + " Year=" + str(apiAnimeYear) + " MatchScore=" + str(animeMatchScore))
@@ -118,10 +116,14 @@ class MyAnimeListUtils():
             
             # get the first aired Date if it is available
             tmpYear = utils.getJSONValue("start_date", detailResult)
-            apiAnimeAvailableAt = datetime.strptime(str(tmpYear), "%Y-%m-%d")
-            Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Year: " + str(apiAnimeAvailableAt))
-            if apiAnimeAvailableAt is not None:
-                metadata.originally_available_at = apiAnimeAvailableAt
+            if(tmpYear is not None):
+                try:
+                    apiAnimeAvailableAt = datetime.strptime(str(tmpYear), "%Y-%m-%d")
+                    Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Year: " + str(apiAnimeAvailableAt))
+                    if apiAnimeAvailableAt is not None:
+                        metadata.originally_available_at = apiAnimeAvailableAt
+                except Exception as e:
+                    Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "There was an Error while adding the Aired Date " + str(e))
             
             # get the content rating if it is available
             apiAnimeContentRating = utils.getJSONValue("classification", detailResult)
@@ -137,10 +139,11 @@ class MyAnimeListUtils():
             
             # get the duration if it is available
             tmpDuration = utils.getJSONValue("duration", detailResult)
-            apiAnimeDuration = tmpDuration * 60000 
-            Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Duration: " + str(apiAnimeDuration))
-            if apiAnimeDuration is not None:
-                metadata.duration = int(apiAnimeDuration)
+            if(tmpDuration is not None):
+                apiAnimeDuration = tmpDuration * 60000 
+                Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Duration: " + str(apiAnimeDuration))
+                if apiAnimeDuration is not None:
+                    metadata.duration = int(apiAnimeDuration)
             
             # get the genres if they are available
             apiAnimeGenres = utils.getJSONValue("genres", detailResult)
@@ -153,15 +156,16 @@ class MyAnimeListUtils():
             # TODO: plex only has Studios currently and the Atarashii API does not provide the Studios from MyAnimeList (yet)
             # When either of those are available this needs to be fixed
             tmpProducers = utils.getJSONValue("producers", detailResult)
-            Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Producers: " + str(tmpProducers))
-            if tmpProducers is not None and len(tmpProducers) > 0:
-                apiAnimeProducers = ""
-                for idx, producer in enumerate(tmpProducers):
-                    apiAnimeProducers += str(producer)
-                    if idx < len(tmpProducers) - 1:
-                        apiAnimeProducers += ", "
-                
-                metadata.studio = str(apiAnimeProducers)
+            if(tmpProducers is not None):
+                Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Producers: " + str(tmpProducers))
+                if tmpProducers is not None and len(tmpProducers) > 0:
+                    apiAnimeProducers = ""
+                    for idx, producer in enumerate(tmpProducers):
+                        apiAnimeProducers += str(producer)
+                        if idx < len(tmpProducers) - 1:
+                            apiAnimeProducers += ", "
+                    
+                    metadata.studio = str(apiAnimeProducers)
             
             '''
             Add specific data for TV-Shows
@@ -176,10 +180,8 @@ class MyAnimeListUtils():
                     Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(episodesUrl))
                     episodeResult = JSON.ObjectFromString(HTTP.Request(episodesUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
                 except Exception as e:
-                    Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested" + str(e))
+                    Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested " + str(e))
                     return
-                
-                #episodeResult = JSON.ObjectFromString(utils.fetchContent(episodesUrl, additionalHeaders=False, cacheTime=MYANIMELIST_CACHE_TIME))
                 
                 # get the episode count if it is available
                 apiAnimeEpisodeCount = utils.getJSONValue("episodes", detailResult)
@@ -216,7 +218,7 @@ class MyAnimeListUtils():
                         else:
                             plexEpisode.originally_available_at = datetime.now()
                         
-                    Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(plexEpisode.title) + " - " + str(plexEpisode.originally_available_at))
+                    Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(apiEpisodeTitle) + " - " + str(apiEpisodeAirDate))
             
             '''
             Add specific data for Movies

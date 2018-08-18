@@ -9,6 +9,7 @@ TODO: Description
 '''
 
 import re
+import difflib
 
 '''Constants'''
 AGENT_NAME = "MyAnimeList.net"
@@ -43,8 +44,7 @@ class Utils():
             
         except Exception as e:
             Log.Error("[" + AGENT_NAME + "] [Utils] " + "Error occurred while fetching the content for URL: " + str(e))
-        
-        #Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetch Complete")
+            
         return result
     
     '''
@@ -69,7 +69,14 @@ class Utils():
         
         if key in json:
             value = json[key]
-        #else:
-        #    Log.Debug(str(key) + ": NA")
         
         return value
+    
+    '''
+    Method to calculate the Match Score of the titles
+    '''
+    def getMatchScore(self, title1, title2):
+        #result = int(100 - abs(String.LevenshteinDistance(title1, title2)))
+        result = int(difflib.SequenceMatcher(None, title1, title2).ratio() * 100)
+        
+        return result

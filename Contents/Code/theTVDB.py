@@ -38,7 +38,7 @@ class TheTVDBUtils():
         try:
             loginResponse = JSON.ObjectFromString(HTTP.Request(loginUrl, data=JSON.StringFromObject(dict(apikey=THETVDB_API_KEY)), headers={'Content-type': 'application/json'}, sleep=2.0, cacheTime=THETVDB_CACHE_TIME).content)
         except Exception as e:
-            Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve authentication token from TheTVDB.com" + str(e))
+            Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve authentication token from TheTVDB.com " + str(e))
             return
         
         if loginResponse is not None:
@@ -52,8 +52,6 @@ class TheTVDBUtils():
         imageTypesUrl = THETVDB_URL_API_MAIN + THETVDB_URL_SERIES_IMAGES.format(id=id)
         
         imageTypesResult = JSON.ObjectFromString(HTTP.Request(imageTypesUrl, headers={'Authorization': 'Bearer %s' % token}, sleep=2.0, cacheTime=THETVDB_CACHE_TIME).content)
-        
-        Log.Warn(imageTypesResult)
         
         if "data" in imageTypesResult:
             

@@ -42,8 +42,6 @@ class TheMovieDbUtils():
                 Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "TheMovieDB configuration could not be requested " + str(e))
                 return
             
-            #configResult = JSON.ObjectFromString(utils.fetchContent(theMovieDBConfigUrl, additionalHeaders=False, cacheTime=THEMOVIEDB_CACHE_TIME))
-            
             if configResult is not None:
                 if "images" in configResult:
                     if "base_url" in configResult["images"]:
@@ -68,7 +66,6 @@ class TheMovieDbUtils():
         except Exception as e:
             Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "TheMovieDB image result could not be requested " + str(e))
             return
-        #movieResult = JSON.ObjectFromString(utils.fetchContent(theMovieDBUrl, additionalHeaders=False, cacheTime=THEMOVIEDB_CACHE_TIME))
         
         if movieResult is not None:
             

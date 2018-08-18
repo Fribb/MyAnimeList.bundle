@@ -51,7 +51,7 @@ def Start():
         Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(AGENT_MAPPING_URL))
         AGENT_MAPPING = JSON.ObjectFromString(HTTP.Request(AGENT_MAPPING_URL, sleep=2.0, cacheTime=AGENT_MAPPING_CACHE_TIME).content)
     except Exception as e:
-        Log.Info("[" + AGENT_NAME + "] " + "Mapping could not be requested" + str(e))
+        Log.Info("[" + AGENT_NAME + "] " + "Mapping could not be requested " + str(e))
 
 def ValidatePrefs():
     Log.Info("[" + AGENT_NAME + "] " + "Validating Preferences")
