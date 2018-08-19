@@ -135,7 +135,10 @@ class MyAnimeListUtils():
             apiAnimeCovers = utils.getJSONValue("image_url", detailResult)
             Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Cover: " + str(apiAnimeCovers))
             if apiAnimeCovers is not None:
-                metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
+                if metadata.posters[str(apiAnimeCovers)] is None:
+                    metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
+                else:
+                    Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Image is already present")
             
             # get the duration if it is available
             tmpDuration = utils.getJSONValue("duration", detailResult)

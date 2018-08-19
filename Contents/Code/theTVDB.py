@@ -69,14 +69,24 @@ class TheTVDBUtils():
                         
                         Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image: " + keyType + " - " + fileName)
                         
+                        
                         if keyType == "poster":
-                            metadata.posters[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            if metadata.posters[str(fileName)] is None:
+                                metadata.posters[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            else:
+                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
                         
                         if keyType == "fanart":
-                            metadata.art[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            if metadata.art[str(fileName)] is None:
+                                metadata.art[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            else:
+                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
                         
                         if keyType == "series":
-                            metadata.banners[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            if metadata.banners[str(fileName)] is None:
+                                metadata.banners[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                            else:
+                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
                         
         else:
             Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve image information from TheTVDB.com") 
