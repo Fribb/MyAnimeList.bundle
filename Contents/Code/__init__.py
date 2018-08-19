@@ -23,7 +23,6 @@ AGENT_PRIMARY_PROVIDER = True
 AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles' ]
 AGENT_CACHE_TIME = CACHE_1HOUR * 24
 
-AGENT_MAPPING = None
 AGENT_MAPPING_URL = "https://atarashii.fribbtastic.net/mapping/animeMapping_full.json"
 AGENT_MAPPING_CACHE_TIME = CACHE_1HOUR * 24 * 7
 
@@ -45,13 +44,6 @@ def Start():
     global AGENT_THEMOVIEDB
     AGENT_THEMOVIEDB = TheMovieDbUtils()
     
-    # load the mapping file
-    global AGENT_MAPPING
-    try:
-        Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(AGENT_MAPPING_URL))
-        AGENT_MAPPING = JSON.ObjectFromString(HTTP.Request(AGENT_MAPPING_URL, sleep=2.0, cacheTime=AGENT_MAPPING_CACHE_TIME).content)
-    except Exception as e:
-        Log.Info("[" + AGENT_NAME + "] " + "Mapping could not be requested " + str(e))
 
 def ValidatePrefs():
     Log.Info("[" + AGENT_NAME + "] " + "Validating Preferences")
@@ -129,7 +121,15 @@ class MALAgent:
     '''
     def getMapping(self, id, key):
         
-        if AGENT_MAPPING is None:
+        mappingFull = None
+        
+        try:
+            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(AGENT_MAPPING_URL))
+            mappingFull = JSON.ObjectFromString(HTTP.Request(AGENT_MAPPING_URL, sleep=2.0, cacheTime=AGENT_MAPPING_CACHE_TIME).content)
+        except Exception as e:
+            Log.Info("[" + AGENT_NAME + "] " + "Mapping could not be requested " + str(e))
+        
+        if mappingFull is None:
             Log.Error("[" + AGENT_NAME + "] " + "Mapping could not be loaded")
             return None
         else:
@@ -138,7 +138,7 @@ class MALAgent:
         mappingString = str(key) + "_id"
         mappingId = None
         
-        for mapping in AGENT_MAPPING:
+        for mapping in mappingFull:
             if "mal_id" in mapping:
                 malId = AGENT_UTILS.getJSONValue("mal_id", mapping)
                 
