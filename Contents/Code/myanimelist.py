@@ -203,6 +203,10 @@ class MyAnimeListUtils():
                         except Exception as e:
                             Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested " + str(e))
                             return
+                        
+                        if "error" in episodeResult:
+                            Log.Warn("[" + AGENT_NAME + "] " + "Episode Information are not available (" + str(episodeResult["error"]) + ") (might want to add them to MyAnimeList.net)!")
+                            break
                 
                         for episode in episodeResult:
                             apiEpisodeNumber = None     # the Number of the episode
