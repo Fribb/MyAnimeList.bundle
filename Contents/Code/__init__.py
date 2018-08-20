@@ -24,7 +24,7 @@ AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.open
 AGENT_CACHE_TIME = CACHE_1HOUR * 24
 
 AGENT_MAPPING_URL = "https://atarashii.fribbtastic.net/mapping/animeMapping_full.json"
-AGENT_MAPPING_CACHE_TIME = CACHE_1HOUR * 24 * 7
+AGENT_MAPPING_CACHE_TIME = CACHE_1HOUR * 24
 
 AGENT_UTILS = None
 AGENT_MYANIMELIST = None
