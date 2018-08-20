@@ -20,7 +20,7 @@ THETVDB_URL_SERIES_IMAGES = "/series/{id}/images"
 THETVDB_URL_SERIES_IMAGE_QUERY = "/series/{id}/images/query?keyType={imageType}"
 THETVDB_URL_BANNERS = "/banners/{image}"
 THETVDB_API_KEY = "CE86D5F59D2835C2"
-THETVDB_CACHE_TIME = CACHE_1HOUR * 24
+THETVDB_CACHE_TIME = CACHE_1HOUR * 24 * 7
 
 class TheTVDBUtils():
     

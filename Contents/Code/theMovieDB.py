@@ -17,7 +17,7 @@ THEMOVIEDB_URL_MAIN = "https://api.themoviedb.org"
 THEMOVIEDB_URL_CONFIGURATION = "/3/configuration?api_key={api_key}"
 THEMOVIEDB_URL_MOVIE_IMAGES = "/3/movie/{id}/images?api_key={api_key}"
 THEMOVIEDB_API_KEY = "f42adc8664ab008c7ea99b720c576213"
-THEMOVIEDB_CACHE_TIME = CACHE_1HOUR * 24
+THEMOVIEDB_CACHE_TIME = CACHE_1HOUR * 24 * 7
 
 class TheMovieDbUtils():
     

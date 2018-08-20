@@ -18,7 +18,7 @@ MYANIMELIST_URL_MAIN = "https://atarashii.fribbtastic.net"
 MYANIMELIST_URL_SEARCH = "/web/2.1/anime/search?q={title}"
 MYANIMELIST_URL_DETAILS = "/web/2.1/anime/{id}"
 MYANIMELIST_URL_EPISODES = "/web/2.1/anime/episodes/{id}?page={page}"
-MYANIMELIST_CACHE_TIME = CACHE_1HOUR * 24
+MYANIMELIST_CACHE_TIME = CACHE_1HOUR * 24 * 7
 
 class MyAnimeListUtils():
     
@@ -73,7 +73,6 @@ class MyAnimeListUtils():
         try:
             Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(detailUrl))
             detailResult = JSON.ObjectFromString(HTTP.Request(detailUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
-            #detailResult = JSON.ObjectFromString(utils.fetchContent(detailUrl, additionalHeaders=False, cacheTime=MYANIMELIST_CACHE_TIME))
         except Exception as e:
             Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "No Detail Information were available " + str(e))
             return
