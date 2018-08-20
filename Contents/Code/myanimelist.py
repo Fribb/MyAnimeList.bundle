@@ -7,6 +7,8 @@ TODO: Description
 
 @author: Fribb http://coding.fribbtastic.net/
 '''
+import math
+
 from utils import Utils
 
 '''Constants'''
@@ -15,7 +17,7 @@ AGENT_NAME = "MyAnimeList.net"
 MYANIMELIST_URL_MAIN = "https://atarashii.fribbtastic.net"
 MYANIMELIST_URL_SEARCH = "/web/2.1/anime/search?q={title}"
 MYANIMELIST_URL_DETAILS = "/web/2.1/anime/{id}"
-MYANIMELIST_URL_EPISODES = "/web/2.1/anime/episodes/{id}"
+MYANIMELIST_URL_EPISODES = "/web/2.1/anime/episodes/{id}?page={page}"
 MYANIMELIST_CACHE_TIME = CACHE_1HOUR * 24
 
 class MyAnimeListUtils():
@@ -61,7 +63,7 @@ class MyAnimeListUtils():
     '''
     Method to request the details of an AnimeID and add the information to the metadata
     '''
-    def getData(self, metadata, type):
+    def getData(self, metadata, type, media):
         Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Requesting Information from MyAnimeList.net")
         
         utils = Utils()
@@ -174,54 +176,65 @@ class MyAnimeListUtils():
             Add specific data for TV-Shows
             '''
             if type == "tvshow":
-                Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Adding TV-Show specific data")
+                Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Adding TV-Show specific data")                
                 
                 apiAnimeEpisodeCount = None
-                episodesUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_EPISODES.format(id=metadata.id)
-        
-                try:
-                    Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(episodesUrl))
-                    episodeResult = JSON.ObjectFromString(HTTP.Request(episodesUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
-                except Exception as e:
-                    Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested " + str(e))
-                    return
+                pages = None
                 
                 # get the episode count if it is available
                 apiAnimeEpisodeCount = utils.getJSONValue("episodes", detailResult)
                 Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Episodes: " + str(apiAnimeEpisodeCount))
-                if apiAnimeEpisodeCount is not None:
-                    metadata.seasons[1].episode_count = int(apiAnimeEpisodeCount)
                 
-                for episode in episodeResult:
-                    apiEpisodeNumber = None     # the Number of the episode
-                    apiEpisodeTitle = None      # the title of the Episode
-                    apiEpisodeAirDate = None    # the air date of the Episode
+                if apiAnimeEpisodeCount is not None and apiAnimeEpisodeCount is not 0:
+                    metadata.seasons[1].episode_count = int(apiAnimeEpisodeCount)
+                else:
+                    metadata.seasons[1].episode_count = int(len(media.seasons[1].episodes))
+                
+                pages = int(math.ceil(float(metadata.seasons[1].episode_count) / 100))
+                
+                # fetch the episodes in 100 chunks
+                if pages is not None:
                     
-                    # get the episode Number
-                    apiEpisodeNumber = utils.getJSONValue("number", episode)
-                    
-                    # get the episode title
-                    apiEpisodeTitle = utils.getJSONValue("title", episode)
-                    
-                    # get the episode air date
-                    apiEpisodeAirDate = utils.getJSONValue("air_date", episode)
-                    
-                    if apiEpisodeNumber is not None:
-                        plexEpisode = metadata.seasons[1].episodes[int(apiEpisodeNumber)]
+                    for page in range(1, pages + 1):
+                        episodesUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_EPISODES.format(id=metadata.id,page=page)
                         
-                        # add the Episode Title if it is available, if not use a default title
-                        if apiEpisodeTitle is not None:
-                            plexEpisode.title = str(apiEpisodeTitle)
-                        else:
-                            plexEpisode.title = "Episode: #" + str(apiEpisodeNumber)
-                        
-                        # add the episode air date if it is available, if not use the current date
-                        if apiEpisodeAirDate is not None:
-                            plexEpisode.originally_available_at = datetime.strptime(str(apiEpisodeAirDate), "%Y-%m-%d")
-                        else:
-                            plexEpisode.originally_available_at = datetime.now()
-                        
-                    Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(apiEpisodeTitle) + " - " + str(apiEpisodeAirDate))
+                        try:
+                            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(episodesUrl))
+                            episodeResult = JSON.ObjectFromString(HTTP.Request(episodesUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
+                        except Exception as e:
+                            Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested " + str(e))
+                            return
+                
+                        for episode in episodeResult:
+                            apiEpisodeNumber = None     # the Number of the episode
+                            apiEpisodeTitle = None      # the title of the Episode
+                            apiEpisodeAirDate = None    # the air date of the Episode
+                            
+                            # get the episode Number
+                            apiEpisodeNumber = utils.getJSONValue("number", episode)
+                            
+                            # get the episode title
+                            apiEpisodeTitle = utils.getJSONValue("title", episode)
+                            
+                            # get the episode air date
+                            apiEpisodeAirDate = utils.getJSONValue("air_date", episode)
+                            
+                            if apiEpisodeNumber is not None:
+                                plexEpisode = metadata.seasons[1].episodes[int(apiEpisodeNumber)]
+                                
+                                # add the Episode Title if it is available, if not use a default title
+                                if apiEpisodeTitle is not None:
+                                    plexEpisode.title = str(apiEpisodeTitle)
+                                else:
+                                    plexEpisode.title = "Episode: #" + str(apiEpisodeNumber)
+                                
+                                # add the episode air date if it is available, if not use the current date
+                                if apiEpisodeAirDate is not None:
+                                    plexEpisode.originally_available_at = datetime.strptime(str(apiEpisodeAirDate), "%Y-%m-%d")
+                                else:
+                                    plexEpisode.originally_available_at = datetime.now()
+                                
+                            Log.Debug("Episode " + str(apiEpisodeNumber) + ": " + str(apiEpisodeTitle) + " - " + str(apiEpisodeAirDate))
             
             '''
             Add specific data for Movies

@@ -84,7 +84,7 @@ class MALAgent:
     def updateTvShow(self, metadata, media, lang):
         Log.Info("[" + AGENT_NAME + "] " + "Updating TV-Show Anime with ID: " + metadata.id)
         
-        AGENT_MYANIMELIST.getData(metadata, "tvshow")
+        AGENT_MYANIMELIST.getData(metadata, "tvshow", media)
         
         if Prefs["getTheTVDBImages"] == True:
             Log.Debug("[" + AGENT_NAME + "] " + "Fetching TheTVDB Mapping")
