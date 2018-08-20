@@ -51,44 +51,51 @@ class TheTVDBUtils():
         
         imageTypesUrl = THETVDB_URL_API_MAIN + THETVDB_URL_SERIES_IMAGES.format(id=id)
         
-        imageTypesResult = JSON.ObjectFromString(HTTP.Request(imageTypesUrl, headers={'Authorization': 'Bearer %s' % token}, sleep=2.0, cacheTime=THETVDB_CACHE_TIME).content)
+        imageTypesResult = None
         
-        if "data" in imageTypesResult:
-            
-            for type in imageTypesResult["data"]:
-                imageTypeQueryUrl = THETVDB_URL_API_MAIN + THETVDB_URL_SERIES_IMAGE_QUERY.format(id=id, imageType=type)
+        try:
+            imageTypesResult = JSON.ObjectFromString(HTTP.Request(imageTypesUrl, headers={'Authorization': 'Bearer %s' % token}, sleep=2.0, cacheTime=THETVDB_CACHE_TIME).content)
+        except Exception as e:
+            Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve imageTypeResult " + str(e))
+        
+        if imageTypesResult is not None:
+        
+            if "data" in imageTypesResult:
                 
-                if type == "poster" or type == "fanart" or type == "series":
+                for type in imageTypesResult["data"]:
+                    imageTypeQueryUrl = THETVDB_URL_API_MAIN + THETVDB_URL_SERIES_IMAGE_QUERY.format(id=id, imageType=type)
                     
-                    imageData = JSON.ObjectFromString(HTTP.Request(imageTypeQueryUrl, headers={'Authorization': 'Bearer %s' % token}, cacheTime=THETVDB_CACHE_TIME, sleep=2.0).content)
-                    
-                    Log.Info("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Adding " + type + " Images to metadata")
-                    for data in imageData["data"]:
-                        keyType = data["keyType"]
-                        fileName = THETVDB_URL_MAIN + THETVDB_URL_BANNERS.format(image=data["fileName"])
+                    if type == "poster" or type == "fanart" or type == "series":
                         
-                        Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image: " + keyType + " - " + fileName)
+                        imageData = JSON.ObjectFromString(HTTP.Request(imageTypeQueryUrl, headers={'Authorization': 'Bearer %s' % token}, cacheTime=THETVDB_CACHE_TIME, sleep=2.0).content)
                         
-                        
-                        if keyType == "poster":
-                            if metadata.posters[str(fileName)] is None:
-                                metadata.posters[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
-                            else:
-                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
-                        
-                        if keyType == "fanart":
-                            if metadata.art[str(fileName)] is None:
-                                metadata.art[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
-                            else:
-                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
-                        
-                        if keyType == "series":
-                            if metadata.banners[str(fileName)] is None:
-                                metadata.banners[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
-                            else:
-                                Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
-                        
-        else:
-            Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve image information from TheTVDB.com") 
+                        Log.Info("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Adding " + type + " Images to metadata")
+                        for data in imageData["data"]:
+                            keyType = data["keyType"]
+                            fileName = THETVDB_URL_MAIN + THETVDB_URL_BANNERS.format(image=data["fileName"])
+                            
+                            Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image: " + keyType + " - " + fileName)
+                            
+                            
+                            if keyType == "poster":
+                                if metadata.posters[str(fileName)] is None:
+                                    metadata.posters[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                                else:
+                                    Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
+                            
+                            if keyType == "fanart":
+                                if metadata.art[str(fileName)] is None:
+                                    metadata.art[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                                else:
+                                    Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
+                            
+                            if keyType == "series":
+                                if metadata.banners[str(fileName)] is None:
+                                    metadata.banners[str(fileName)] = Proxy.Media(HTTP.Request(str(fileName), sleep=2.0).content)
+                                else:
+                                    Log.Debug("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Image is already present")
+                            
+            else:
+                Log.Error("[" + AGENT_NAME + "] [TheTVDBUtils] " + "Could not retrieve image information from TheTVDB.com") 
             
         return
