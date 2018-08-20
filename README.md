@@ -27,14 +27,14 @@ The MyAnimeList.net is the main source for the information and the agent relies 
 * Episode Air Date
 
 ### TheTVDB.com
-TheTVDB.com is used to request more image information for episodic Anime
+TheTVDB.com is used to request more image information for episodic Anime. You can enable or disable this feature to pull image information as well as set the image size in the Agent Settings.
 
 * Posters (Plex: Posters)
 * Fanart (Plex: Art)
 * Series (Plex: Banners)
 
 ### TheMovieDB.com
-TheMovieDB is used to request more image information for Anime Movies
+TheMovieDB is used to request more image information for Anime Movies. You can enable or disable this feature to pull image information as well as set the image size in the Agent Settings.
 
 * Posters (Plex: Posters)
 * Backdrops (Plex: Art)
@@ -68,6 +68,18 @@ Directories:
 * Windows: %LOCALAPPDATA%\Plex Media Server\Plug-ins
 
 [More information](https://support.plex.tv/articles/201106098-how-do-i-find-the-plug-ins-folder/)
+
+## Update:
+I recommend to disable the feature to fetch image information from TheTVDB and TheMovieDB initially or the match process will be extremely long. Any mismatches will pull additional images that might be wrong.
+
+1. Stop Plex 
+2. Download the Agent and extract it into your Plug-ins folder
+3. Check permissions
+4. Start Plex
+5. Go to the Agent Settings and disable "Fetch Images for TV-Shows/Movies"
+6. match your library and fix matches that were wrongly or not matched at all
+7. activate "Fetch Images for..." again
+8. refresh metadata and go do something else, this will take some time
 
 ## Support:
 
