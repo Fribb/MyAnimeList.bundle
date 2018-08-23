@@ -10,7 +10,7 @@ This Metadata Agent loads the information from the Anime Website [MyAnimeList.ne
 The Agent will request the following information from the various sources.
 
 ### MyAnimeList.net
-The MyAnimeList.net is the main source for the information and the agent relies on a stand-alone installtion of the [atarashii API](https://bitbucket.org/animeneko/atarashii-api) which provides the following information:
+The MyAnimeList.net is the main source for the information and the agent relies on a stand-alone installation of the [atarashii API](https://bitbucket.org/animeneko/atarashii-api) which provides the following information:
 
 * ID
 * Title
@@ -33,7 +33,7 @@ TheTVDB.com is used to request more image information for episodic Anime. You ca
 * Fanart (Plex: Art)
 * Series (Plex: Banners)
 
-### TheMovieDB.com
+### TheMovieDB.org
 TheMovieDB is used to request more image information for Anime Movies. You can enable or disable this feature to pull image information as well as set the image size in the Agent Settings.
 
 * Posters (Plex: Posters)
@@ -88,8 +88,5 @@ For all support related or general questions please use the [thread in the offic
 For any issues like bugs, unintended behaviour please create a new Issue on the [github issue tracker](https://github.com/Fribb/MyAnimeList.bundle/issues)
 
 For development stages, release information, download link or anything else you can visit my [dev Blog here](https://coding.fribbtastic.net/projects/myanimelistagent/)
-
-
-## Frequently asked Questions (FAQ):
 
 [See the Wiki Page for the FAQ](https://github.com/Fribb/MyAnimeList.bundle/wiki/Frequently-Asked-Questions)
