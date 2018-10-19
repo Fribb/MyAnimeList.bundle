@@ -36,10 +36,10 @@ class TheMovieDbUtils():
             theMovieDBConfigUrl = THEMOVIEDB_URL_MAIN + THEMOVIEDB_URL_CONFIGURATION.format(api_key=THEMOVIEDB_API_KEY)
         
             try:
-                Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(theMovieDBConfigUrl))
+                Log.Info("[" + AGENT_NAME + "] [TheMovieDbUtils] " + "Fetching URL " + str(theMovieDBConfigUrl))
                 configResult = JSON.ObjectFromString(HTTP.Request(theMovieDBConfigUrl, sleep=2.0, cacheTime=THEMOVIEDB_CACHE_TIME).content)
             except Exception as e:
-                Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "TheMovieDB configuration could not be requested " + str(e))
+                Log.Error("[" + AGENT_NAME + "] [TheMovieDbUtils] " + "TheMovieDB configuration could not be requested " + str(e))
                 return
             
             if configResult is not None:
@@ -61,7 +61,7 @@ class TheMovieDbUtils():
         ### Request the TheMovieDB information by ID
         
         try:
-            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(theMovieDBUrl))
+            Log.Info("[" + AGENT_NAME + "] [TheMovieDbUtils] " + "Fetching URL " + str(theMovieDBUrl))
             movieResult = JSON.ObjectFromString(HTTP.Request(theMovieDBUrl, sleep=2.0, cacheTime=THEMOVIEDB_CACHE_TIME).content)
         except Exception as e:
             Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "TheMovieDB image result could not be requested " + str(e))

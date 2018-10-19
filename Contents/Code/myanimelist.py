@@ -33,7 +33,7 @@ class MyAnimeListUtils():
         utils = Utils()
         
         try:
-            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(searchUrl))
+            Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Fetching URL " + str(searchUrl))
             searchResults = JSON.ObjectFromString(HTTP.Request(searchUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
         except Exception as e:
             Log.Info("[" + AGENT_NAME + "] " + "search results could not be requested " + str(e))
@@ -71,7 +71,7 @@ class MyAnimeListUtils():
         detailUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_DETAILS.format(id=metadata.id)
         
         try:
-            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(detailUrl))
+            Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Fetching URL " + str(detailUrl))
             detailResult = JSON.ObjectFromString(HTTP.Request(detailUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
         except Exception as e:
             Log.Error("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "No Detail Information were available " + str(e))
@@ -198,7 +198,7 @@ class MyAnimeListUtils():
                         episodesUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_EPISODES.format(id=metadata.id,page=page)
                         
                         try:
-                            Log.Info("[" + AGENT_NAME + "] [Utils] " + "Fetching URL " + str(episodesUrl))
+                            Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Fetching URL " + str(episodesUrl))
                             episodeResult = JSON.ObjectFromString(HTTP.Request(episodesUrl, sleep=2.0, cacheTime=MYANIMELIST_CACHE_TIME).content)
                         except Exception as e:
                             Log.Info("[" + AGENT_NAME + "] " + "episode results could not be requested " + str(e))
