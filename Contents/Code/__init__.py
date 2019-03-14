@@ -103,7 +103,7 @@ class MALAgent:
     def updateMovie(self, metadata, media, lang):
         Log.Info("[" + AGENT_NAME + "] " + "Updating Movie Anime with ID: " + metadata.id)
         
-        AGENT_MYANIMELIST.getData(metadata, "movie")
+        AGENT_MYANIMELIST.getData(metadata, "movie", media)
         
         if Prefs["getTheMovieDbImages"] == True:
             Log.Debug("[" + AGENT_NAME + "] " + "Fetching TheMovieDB Mapping")
