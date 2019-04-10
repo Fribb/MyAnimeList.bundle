@@ -20,7 +20,7 @@ AGENT_NAME = "MyAnimeList.net Agent"
 AGENT_VERSION = "v6.0.0"
 AGENT_LANGUAGES = [Locale.Language.English]
 AGENT_PRIMARY_PROVIDER = True
-AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles' ]
+AGENT_ACCEPTS_FROM = [ 'com.plexapp.agents.localmedia', 'com.plexapp.agents.opensubtitles', 'com.plexapp.agents.subzero' ]
 AGENT_CACHE_TIME = CACHE_1HOUR * 24
 
 AGENT_MAPPING_URL = "https://atarashii.fribbtastic.net/mapping/animeMapping_full.json"
