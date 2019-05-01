@@ -8,6 +8,7 @@ TODO: Description
 @author: Fribb http://coding.fribbtastic.net/
 '''
 import math
+import ssl, urllib2
 
 from utils import Utils
 
@@ -137,7 +138,14 @@ class MyAnimeListUtils():
             Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Cover: " + str(apiAnimeCovers))
             if apiAnimeCovers is not None:
                 if metadata.posters[str(apiAnimeCovers)] is None:
-                    metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
+                    
+                    #metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
+                    
+                    request = urllib2.Request(str(apiAnimeCovers))
+                    response = urllib2.urlopen(request, context=ssl.SSLContext(ssl.PROTOCOL_TLSv1))
+                    content = response.read()
+                    
+                    metadata.posters[str(apiAnimeCovers)] = Proxy.Media(content)
                 else:
                     Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Image is already present")
             
