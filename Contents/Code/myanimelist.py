@@ -8,7 +8,7 @@ TODO: Description
 @author: Fribb http://coding.fribbtastic.net/
 '''
 import math
-import ssl, urllib2
+import re, ssl, urllib2
 
 from utils import Utils
 
@@ -27,10 +27,23 @@ class MyAnimeListUtils():
     Search the Atarashii API for the name of the Anime
     '''
     def search(self, name, results, lang):
-        Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Searching for Anime: " + str(name))
+        manualIdMatch = re.match(r'^myanimelist-id:([0-9]+)$', str(name))
         
-        title = String.Quote(name, usePlus=True)
-        searchUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_SEARCH.format(title=title)
+        if manualIdMatch:
+            manualId = manualIdMatch.group(1)
+            
+            Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Searching for Anime by ID: " + str(manualId))
+            
+            searchUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_DETAILS.format(id=str(manualId))
+            wrapSearchResultsInArray = True
+            forcePerfectAnimeMatchScore = True
+        else:
+            Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Searching for Anime: " + str(name))
+            
+            searchUrl = MYANIMELIST_URL_MAIN + MYANIMELIST_URL_SEARCH.format(title=String.Quote(name, usePlus=True))
+            wrapSearchResultsInArray = False
+            forcePerfectAnimeMatchScore = False
+        
         utils = Utils()
         
         try:
@@ -39,6 +52,9 @@ class MyAnimeListUtils():
         except Exception as e:
             Log.Info("[" + AGENT_NAME + "] " + "search results could not be requested " + str(e))
             return
+        
+        if wrapSearchResultsInArray:
+            searchResults = [searchResults]
         
         Log.Info("[" + AGENT_NAME + "] [MyAnimeListUtils] " + str(len(searchResults)) + " Results found")
         for series in searchResults:            
@@ -52,7 +68,9 @@ class MyAnimeListUtils():
             apiAnimeYear = str(utils.getJSONValue("start_date", series)).split("-")[0]       
             
             # calculate the match score
-            if len(apiAnimeTitle) > 0:
+            if forcePerfectAnimeMatchScore:
+                animeMatchScore = 100
+            elif len(apiAnimeTitle) > 0:
                 animeMatchScore = utils.getMatchScore(apiAnimeTitle, name)
             
             # append results to search results
