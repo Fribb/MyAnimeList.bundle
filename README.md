@@ -1,6 +1,10 @@
 MyAnimeList.bundle
 ==================
 
+## Privacy:
+
+The Agents accesses an API that is running on my own server, the log files contain the IP-Address and API endpoint of each request, this is necessary for security reasons. Those log files are being rotated daily and those rotations will contain anonymized IP-Addresses. 
+
 ## Description:
 [Plex Media Server (PMS)](https://www.plex.tv/) Metadata Agent for [MyAnimelist.net](https://myanimelist.net/)
 
