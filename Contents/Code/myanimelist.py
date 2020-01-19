@@ -155,17 +155,20 @@ class MyAnimeListUtils():
             apiAnimeCovers = utils.getJSONValue("image_url", detailResult)
             Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Cover: " + str(apiAnimeCovers))
             if apiAnimeCovers is not None:
-                if metadata.posters[str(apiAnimeCovers)] is None:
-                    
-                    #metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
-                    
-                    request = urllib2.Request(str(apiAnimeCovers))
-                    response = urllib2.urlopen(request, context=ssl.SSLContext(ssl.PROTOCOL_SSLv23))
-                    content = response.read()
-                    
-                    metadata.posters[str(apiAnimeCovers)] = Proxy.Media(content)
+                if not apiAnimeCovers:
+                    Log.Warn("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Image was empty")
                 else:
-                    Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Image is already present")
+                    if metadata.posters[str(apiAnimeCovers)] is None:
+                        
+                        #metadata.posters[str(apiAnimeCovers)] = Proxy.Media(HTTP.Request(str(apiAnimeCovers), sleep=2.0).content)
+                        
+                        request = urllib2.Request(str(apiAnimeCovers))
+                        response = urllib2.urlopen(request, context=ssl.SSLContext(ssl.PROTOCOL_SSLv23))
+                        content = response.read()
+                        
+                        metadata.posters[str(apiAnimeCovers)] = Proxy.Media(content)
+                    else:
+                        Log.Debug("[" + AGENT_NAME + "] [MyAnimeListUtils] " + "Image is already present")
             
             # get the duration if it is available
             tmpDuration = utils.getJSONValue("duration", detailResult)
