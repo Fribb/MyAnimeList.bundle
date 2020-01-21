@@ -88,8 +88,8 @@ class TheMovieDbUtils():
                     url = imageBase + Prefs["theMovieDbBackgroundSize"] + "/" + poster["file_path"]
                     Log.Debug("[" + AGENT_NAME + "] [TheMovieDbUtils] " + "TheMovieDB Poster Image Url=" + url)
                     
-                    if metadata.art[str(url)] is None:
-                        metadata.art[str(url)] = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
+                    if metadata.posters[str(url)] is None:
+                        metadata.posters[str(url)] = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
                     else:
                         Log.Debug("[" + AGENT_NAME + "] [TheMovieDbUtils] " + "Image is already present")
             else:
