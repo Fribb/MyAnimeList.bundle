@@ -1,41 +1,97 @@
 [
 	{
-		"id": "getTheMovieDbImages",
-		"label": "Fetch Images for Movies from TheMovieDB: ",
-		"type": "bool",
-		"default": "true"
-	},
-	{
-		"id": "getTheTVDBImages",
-		"label": "Fetch Images for TV-Shows from TheTVDB: ",
-		"type": "bool",
-		"default": "true"
-	},
-	{
-		"id": "theMovieDbBackgroundSize",
-		"label": "Download Background images from TheMovieDB with Size (w=width, h=height): ",
+		"id": "preferredTitle",
+		"label": "Preferred Title Language",
 		"type": "enum",
 		"values": [
-			"w300",
-			"w780",
-			"w1280",
-			"original"
+			"main",
+			"Japanese",
+			"English"
 		],
-		"default": "original"
+		"default": "main"
 	},
 	{
-		"id": "theMovieDbPosterSize",
-		"label": "Download Poster images from TheMovieDB with Size (w=width, h=height): ",
+		"id": "actorImage",
+		"label": "Preferred Staff Image",
 		"type": "enum",
 		"values": [
-			"w92",
-			"w154",
-			"w185",
-			"w342",
+			"Character",
+			"Voice Actor"
+		],
+		"default": "Character"
+	},
+	{
+		"id": "actorLanguage",
+		"label": "Preferred Staff Language",
+		"type": "enum",
+		"values": [
+			"Japanese",
+			"English"
+		],
+		"default": "Japanese"
+	},
+	{
+		"id": "tvshowImageSource",
+		"label": "Source for additional images in Shows",
+		"type": "enum",
+		"values": [
+			"disabled",
+			"TheTVDB",
+			"TheMovieDB"
+		],
+		"default": "disabled"
+	},
+	{
+		"id": "movieImageSource",
+		"label": "Source for additional images for Movies",
+		"type": "enum",
+		"values": [
+			"disabled",
+			"TheTVDB",
+			"TheMovieDB"
+		],
+		"default": "disabled"
+	},
+	{
+		"id": "tmdbAPIKey",
+		"label": "TheMovieDB - API Key",
+		"type": "text"
+	},
+	{
+		"id": "tmdbPosterSize",
+		"label": "TheMovieDB - Poster image size (w=width, h=height)",
+		"type": "enum",
+		"values": [
+			"original",
+			"w780",
 			"w500",
-			"w780",
-			"original"
+			"w342",
+			"w185",
+			"w154",
+			"w92"
 		],
 		"default": "original"
+	},
+	{
+		"id": "tmdbBackgroundSize",
+		"label": "TheMovieDB - Background image size (w=width, h=height)",
+		"type": "enum",
+		"values": [
+			"original",
+			"w1280",
+			"w780",
+			"w300"
+		],
+		"default": "original"
+	},
+	{
+		"id": "tvdbAPIKey",
+		"label": "TheTVDB - API Key",
+		"type": "text"
+	},
+	{
+		"id": "tvdbAPIPIN",
+		"label": "TheTVDB - API PIN",
+		"type": "text"
 	}
 ]

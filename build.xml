@@ -1,0 +1,59 @@
+<project name="MyAnimeList Agent" default="package" basedir=".">
+	<description>
+		This is the Task to package only the necessary Agent resources into a zip file
+		and to increase revision, minor and major version and append it to the zip filename
+	</description>
+	
+	<property name="version.file" location="${basedir}/VERSION"/>
+		
+	<macrodef name="load.version.info">
+        <sequential>
+            <property file="${version.file}"/>
+            <checksum file="${version.file}" property="sha1.number" algorithm="SHA" format="CHECKSUM"/>
+            <echo>Version: ${major.number}.${minor.number}.${build.number}</echo>
+            <echo>SHA1: ${sha1.number}</echo>
+        </sequential>
+    </macrodef>
+	
+	<target name="00.inc.revision" unless="no.increment.revision">
+        <propertyfile file="${version.file}">
+            <entry key="minor.number" default="0" operation="=" pattern="0" type="int"/>
+            <entry key="major.number" default="0" operation="=" pattern="0" type="int"/>
+            <entry key="build.number" default="0" operation="+" pattern="0" type="int"/>
+        </propertyfile>
+		<load.version.info/>
+    </target>
+	
+	<target name="01.inc.minor" unless="no.increment.minor">
+		<propertyfile file="${version.file}">
+            <entry key="minor.number" default="0" operation="+" pattern="0" type="int"/>
+            <entry key="major.number" default="0" operation="=" pattern="0" type="int"/>
+            <entry key="build.number" value="0" operation="="  type="int"/>
+        </propertyfile>
+		<load.version.info/>
+    </target>
+	
+	<target name="02.inc.major" >
+        <propertyfile file="${version.file}">
+            <entry key="minor.number" value="0" operation="=" pattern="0" type="int"/>
+            <entry key="major.number" default="0" operation="+" pattern="0" type="int"/>
+            <entry key="build.number" value="0" operation="=" pattern="0" type="int"/>
+        </propertyfile>
+		<load.version.info/>
+    </target>
+
+	<target name="package">
+		<load.version.info/>
+		<property file="${version.file}"></property>
+		<zip destfile="MyAnimeList-v${major.number}.${minor.number}.${build.number}.zip">
+			<zipfileset dir=".">
+				<include name="**/*.py"/>
+				<include name="**/*.png"/>
+				<include name="**/*.json"/>
+				<include name="**/*.plist"/>
+				<include name="VERSION"/>
+				<include name="README.md"/>
+			</zipfileset>
+		</zip>
+	</target>
+</project>
