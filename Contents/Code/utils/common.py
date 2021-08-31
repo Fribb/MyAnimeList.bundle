@@ -21,7 +21,7 @@ class CommonUtils:
     ''' caching time for requests '''
     AGENT_CACHE_TIME = CACHE_1HOUR * 24
     ''' mapping file '''
-    AGENT_MAPPING_URL = "https://fribbtastic.net/mapping/animeMapping_full.json"
+    AGENT_MAPPING_URL = "https://fribbtastic.net/mapping/anime-list-full.json"
     ''' headers '''
     AGENT_HEADERS = {'Content-type': 'application/json'}
     
