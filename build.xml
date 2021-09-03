@@ -46,7 +46,7 @@
 		<load.version.info/>
 		<property file="${version.file}"></property>
 		<zip destfile="MyAnimeList-v${major.number}.${minor.number}.${build.number}.zip">
-			<zipfileset dir=".">
+			<zipfileset dir="." prefix="MyAnimeList.bundle">
 				<include name="**/*.py"/>
 				<include name="**/*.png"/>
 				<include name="**/*.json"/>
