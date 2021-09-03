@@ -221,3 +221,15 @@ class CommonUtils:
         else:
             Log.Error("[" + self.AGENT_NAME + "] " + "Mapping file could not be requested")
             return None
+    
+    '''
+    request the image
+    '''
+    def requestImage(self, url):
+        
+        try:
+            media = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
+            return media
+        except Exception as e:
+            Log.Error("[" + self.AGENT_NAME + "] " + "Image could not be requested: " + str(e))
+            return None

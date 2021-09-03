@@ -361,4 +361,7 @@ class JikanApiUtils:
             picArr = self.COMMON_UTILS.getJsonValue("pictures", personResult)
             pictures = self.COMMON_UTILS.getArrayFromJsonValue("large", picArr)
         
-        return pictures[0]
+        if len(pictures) > 0:
+            return pictures[0]
+        else:
+            return None

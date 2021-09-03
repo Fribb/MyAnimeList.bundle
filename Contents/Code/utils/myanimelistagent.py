@@ -2,6 +2,7 @@ from common import CommonUtils
 from jikan import JikanApiUtils
 from thetvdb import TheTvDbUtils
 from themoviedb import TheMovieDbUtils
+import socket
 
 class MyAnimeListAgent:
     
@@ -24,6 +25,9 @@ class MyAnimeListAgent:
         self.AGENT_NAME = self.COMMON_UTILS.getAgentName()
         self.TVDB_UTILS = TheTvDbUtils()
         self.TMDB_UTILS = TheMovieDbUtils()
+        
+        socket.setdefaulttimeout(60)
+        
         return
     
     '''

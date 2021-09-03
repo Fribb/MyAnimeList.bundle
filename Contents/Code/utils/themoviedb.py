@@ -89,7 +89,9 @@ class TheMovieDbUtils():
             backdropUrl = baseUrl + backgroundSize + "/" + path
             
             if metadata.art[str(backdropUrl)] is None:
-                metadata.art[str(backdropUrl)] = Proxy.Media(HTTP.Request(str(backdropUrl), sleep=2.0).content)
+                image = self.COMMON_UTILS.requestImage(str(backdropUrl))
+                if image is not None:
+                    metadata.art[str(backdropUrl)] = image #Proxy.Media(HTTP.Request(str(backdropUrl), sleep=2.0).content)
             else:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Background is already present (" + str(backdropUrl) + ")")
         
@@ -100,7 +102,9 @@ class TheMovieDbUtils():
             posterUrl = baseUrl + posterSize + "/" + path
             
             if metadata.posters[str(posterUrl)] is None:
-                metadata.posters[str(posterUrl)] = Proxy.Media(HTTP.Request(str(posterUrl), sleep=2.0).content)
+                image = self.COMMON_UTILS.requestImage(str(posterUrl))
+                if image is not None:
+                    metadata.posters[str(posterUrl)] = image #Proxy.Media(HTTP.Request(str(posterUrl), sleep=2.0).content)
             else:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Poster is already present (" + str(posterUrl) + ")")
             

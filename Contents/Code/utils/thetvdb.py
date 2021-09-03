@@ -137,19 +137,25 @@ class TheTvDbUtils():
         
         if name == "Banner":
             if metadata.banners[str(url)] is None:
-                metadata.banners[str(url)] = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
+                image = self.COMMON_UTILS.requestImage(str(url))
+                if image is not None:
+                    metadata.banners[str(url)] = image #Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
             else:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Banner is already present (" + str(url) + ")")
         
         if name == "Poster":
             if metadata.posters[str(url)] is None:
-                metadata.posters[str(url)] = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
+                image = self.COMMON_UTILS.requestImage(str(url))
+                if image is not None:
+                    metadata.posters[str(url)] = image #Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
             else:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Poster is already present (" + str(url) + ")")
         
         if name == "Background":
             if metadata.art[str(url)] is None:
-                metadata.art[str(url)] = Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
+                image = self.COMMON_UTILS.requestImage(str(url))
+                if image is not None:
+                    metadata.art[str(url)] = image #Proxy.Media(HTTP.Request(str(url), sleep=2.0).content)
             else:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Background is already present (" + str(url) + ")")
         
