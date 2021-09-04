@@ -123,7 +123,7 @@ class JikanApiUtils:
             apiRating = self.COMMON_UTILS.getJsonValue("score", detailResult)
             if apiRating is not None:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Rating: " + str(apiRating))
-                metadata.rating = apiRating
+                metadata.rating = float(apiRating)
             else:
                 Log.Warn("[" + self.AGENT_NAME + "] " + "Rating was not available ")
             
@@ -325,7 +325,8 @@ class JikanApiUtils:
                         vaId = self.COMMON_UTILS.getJsonValue("mal_id", voiceActor)
                         vaName = self.COMMON_UTILS.getJsonValue("name", voiceActor)
                         if preferredCharacterImage == "Voice Actor":
-                            vaImage = self.getPersonImage(vaId)
+                            image_url = self.COMMON_UTILS.getJsonValue("image_url", voiceActor)
+                            vaImage = image_url.replace("r/42x62/", "")
                         vaLanguage = vaLang
                         break
                 
@@ -347,21 +348,3 @@ class JikanApiUtils:
                     newRole.photo = charImage
         
         return
-    
-    '''
-    get the image for a person
-    '''
-    def getPersonImage(self, id):
-        Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Person image from Jikan")
-        
-        personUrl = self.API_MAIN + self.API_PERSON.format(id=id)
-        personResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(personUrl))
-        
-        if personResult is not None:
-            picArr = self.COMMON_UTILS.getJsonValue("pictures", personResult)
-            pictures = self.COMMON_UTILS.getArrayFromJsonValue("large", picArr)
-        
-        if len(pictures) > 0:
-            return pictures[0]
-        else:
-            return None
