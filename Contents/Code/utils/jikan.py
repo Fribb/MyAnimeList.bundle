@@ -81,9 +81,10 @@ class JikanApiUtils:
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting detailed Information from Jikan")
         
         detailsUrl = self.API_MAIN + self.API_DETAILS.format(id=metadata.id)
-        detailResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(detailsUrl))
+        detailResponse = self.COMMON_UTILS.getResponse(detailsUrl)
         
-        if detailResult is not None:
+        if detailResponse is not None:
+            detailResult = JSON.ObjectFromString(detailResponse)
             
             # get the MyAnimeList ID from the JSON response and add it to the metadata
             apiId = self.COMMON_UTILS.getJsonValue("mal_id", detailResult)
@@ -193,8 +194,9 @@ class JikanApiUtils:
                 metadata.studio = ', '.join(studiosArray)
             else:
                 Log.Warn("[" + self.AGENT_NAME + "] " + "Studios were not available ")
-            
-        return
+        else:
+            Log.Warn("[" + self.AGENT_NAME + "] " + "There was an error requesting a response from the Jikan API")
+            return None
     
     '''
     get the episodes for a specific MyAnimeList ID
@@ -205,9 +207,10 @@ class JikanApiUtils:
         firstPage = 1
         
         episodesUrl = self.API_MAIN + self.API_EPISODES.format(id=metadata.id,page=firstPage)
-        episodesResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(episodesUrl))
+        episodeResponse = self.COMMON_UTILS.getResponse(episodesUrl)
         
-        if episodesResult is not None:
+        if episodeResponse is not None:
+            episodesResult = JSON.ObjectFromString(episodeResponse)
             maxPages = self.COMMON_UTILS.getJsonValue("episodes_last_page", episodesResult)
             
             # parse the first page and add them to the metadata
@@ -223,7 +226,7 @@ class JikanApiUtils:
                     self.parseEpisodePage(metadata, currentPage, maxPages, nextPageResult)
             
         else:
-            Log.Warn("[" + self.AGENT_NAME + "] " + "Episodes were not available")
+            Log.Warn("[" + self.AGENT_NAME + "] " + "Episodes were not available or there was an error retrieving them")
             
         return
     
@@ -265,9 +268,10 @@ class JikanApiUtils:
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Pictures from Jikan")
         
         picturesUrl = self.API_MAIN + self.API_PICTURES.format(id=metadata.id)
-        picturesResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(picturesUrl))
+        pictureResponse = self.COMMON_UTILS.getResponse(picturesUrl)
         
-        if picturesResult is not None:
+        if pictureResponse is not None:
+            picturesResult = JSON.ObjectFromString(pictureResponse)
             
             picArr = self.COMMON_UTILS.getJsonValue("pictures", picturesResult)
             pictures = self.COMMON_UTILS.getArrayFromJsonValue("large", picArr)
@@ -297,11 +301,12 @@ class JikanApiUtils:
         preferredCharacterImage = str(Prefs["actorImage"])
         
         staffUrl = self.API_MAIN + self.API_STAFF.format(id=metadata.id)
-        staffResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(staffUrl))
+        staffResponse = self.COMMON_UTILS.getResponse(staffUrl)
         
         metadata.roles.clear()
         
-        if staffResult is not None:
+        if staffResponse is not None:
+            staffResult = JSON.ObjectFromString(staffResponse)
             
             charactersArr = self.COMMON_UTILS.getJsonValue("characters", staffResult)
             
