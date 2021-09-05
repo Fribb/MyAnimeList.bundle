@@ -128,6 +128,8 @@ The Agent accepts the following Metadata Agents:
 * [XBMCnfoTVImporter](https://github.com/gboudreau/XBMCnfoTVImporter.bundle)
 * [HTTP Anidb Metadata Agent (HAMA)](https://github.com/ZeroQI/Hama.bundle/)
 
+Please note that not every Agent is necessarily compatible with each other. 
+
 ### Mapping:
 To provide a way to get the additional images from TheTVDB and/or TheMovieDB the agent will use a list of IDs of mappings between different websites.
 
