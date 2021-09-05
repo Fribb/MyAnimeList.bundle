@@ -180,3 +180,5 @@ For any issues like bugs, unintended behaviour please create a new Issue on the 
 For development stages, release information, download link or anything else you can visit my [dev Blog here](https://fribbtastic.net/projects/myanimelistagent/)
 
 [See the Wiki Page for the FAQ](https://github.com/Fribb/MyAnimeList.bundle/wiki/Frequently-Asked-Questions)
+
+We also have a [Discord Server](https://discord.gg/drHgfgC6)
