@@ -140,6 +140,8 @@ See my [anime-list Project](https://github.com/Fribb/anime-lists) for more infor
 
 ### The Agent
 
+Download the Agent [here](https://fribbtastic.net/projects/myanimelistagent/)
+
 Installation is straight forward, place the MyAnimeList.bundle folder into the directories (depending on your OS) listed below and restart your Plex Media Server (Note: Plex only loads the Agent on restart!).  
 
 Directories:
