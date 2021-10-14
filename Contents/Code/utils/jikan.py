@@ -110,7 +110,11 @@ class JikanApiUtils:
                 Log.Debug("[" + self.AGENT_NAME + "] " + "Title (" + preferredTitle + "): " + str(apiTitle))
                 metadata.title = str(apiTitle)
             else:
-                Log.Warn("[" + self.AGENT_NAME + "] " + "Title was not available ")
+                Log.Warn("[" + self.AGENT_NAME + "] " + "title for language (" + titleLanguage + ") could not be retrieved, falling back to main title")
+                
+                apiTitle = self.COMMON_UTILS.getJsonValue("title", detailResult)
+                metadata.title = str(apiTitle)
+                Log.Debug("[" + self.AGENT_NAME + "] " + "Title: " + str(apiTitle)) 
             
             # get the summary from the JSON response and add it to the metadata
             apiSummary = self.COMMON_UTILS.getJsonValue("synopsis", detailResult)
