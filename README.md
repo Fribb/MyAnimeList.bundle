@@ -173,6 +173,8 @@ This is a great example to demonstrate the Problem.
 The Folder represents the TV Version of Big Order (ID=31904), however, there is also an OVA version available (ID=30137).
 With ASS removing the (TV) part it will create a 100% match to the incorrect Anime. This mismatch would create a library item with no Episode information (because the OVA only has one)
 
+On the other hand, BABS does not recognize any episode with 4 numbers, for example 1000.
+
 ## Support:
 
 For all support related or general questions please use the [thread in the official plex forums](https://forums.plex.tv/discussion/105054/release-myanimelist-net-metadata-agent/p1)
