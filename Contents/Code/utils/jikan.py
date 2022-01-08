@@ -1,9 +1,10 @@
 from common import CommonUtils
 import re
+import time
 
 class JikanApiUtils:
     
-    API_MAIN        = "https://jikan.fribbtastic.net/v3"
+    API_MAIN        = "https://api.jikan.moe/v3"
     API_DETAILS     = "/anime/{id}"
     API_SEARCH      = "/search/anime?q={title}"
     API_EPISODES    = API_DETAILS + "/episodes/{page}"
@@ -222,6 +223,9 @@ class JikanApiUtils:
             
             # if there are more pages, parse them too and add them to the metadata
             for currentPage in range(firstPage + 1, maxPages + 1):
+        
+                ## Wait 0.5 seconds to not go beyond the rate limit of the Jikan API
+                time.sleep(0.5)
                 
                 nextPageUrl = self.API_MAIN + self.API_EPISODES.format(id=metadata.id,page=currentPage)
                 nextPageResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(nextPageUrl))
@@ -271,6 +275,9 @@ class JikanApiUtils:
     def getPictures(self, metadata):
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Pictures from Jikan")
         
+        ## Wait 0.5 seconds to not go beyond the rate limit of the Jikan API
+        time.sleep(0.5)
+        
         picturesUrl = self.API_MAIN + self.API_PICTURES.format(id=metadata.id)
         pictureResponse = self.COMMON_UTILS.getResponse(picturesUrl)
         
@@ -304,6 +311,9 @@ class JikanApiUtils:
         preferredVaLanguage = str(Prefs["actorLanguage"])
         preferredCharacterImage = str(Prefs["actorImage"])
         
+        ## Wait 0.5 seconds to not go beyond the rate limit of the Jikan API
+        time.sleep(0.5)
+                
         staffUrl = self.API_MAIN + self.API_STAFF.format(id=metadata.id)
         staffResponse = self.COMMON_UTILS.getResponse(staffUrl)
         
