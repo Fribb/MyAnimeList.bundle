@@ -13,7 +13,7 @@ class CommonUtils:
     ''' the name of the Agent '''
     AGENT_NAME = "MyAnimeList.net"
     ''' the library languages ''' 
-    AGENT_LANGUAGES = [Locale.Language.English]
+    AGENT_LANGUAGES = [Locale.Language.English, 'fr', 'zh', 'sv', 'no', 'da', 'fi', 'nl', 'de', 'it', 'es', 'pl', 'hu', 'el', 'tr', 'ru', 'he', 'ja', 'pt', 'cs', 'ko', 'sl', 'hr']
     ''' is the agent a primary provider of the metadata '''
     AGENT_PRIMARY_PROVIDER = True
     ''' allows other agents to provide metadata '''
