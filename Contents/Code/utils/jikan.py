@@ -3,7 +3,7 @@ import re
 import time
 
 class JikanApiUtils:
-    
+
     API_MAIN        = "https://api.jikan.moe/v4"
     API_DETAILS     = "/anime/{id}"
     API_SEARCH      = "/anime?q={title}"
@@ -12,75 +12,78 @@ class JikanApiUtils:
     API_PICTURES    = API_DETAILS + "/pictures"
     API_PERSON      = "/person/{id}/pictures"
     API_CHARACTER   = "/character/{id}/pictures"
-    
+
     COMMON_UTILS = None
     AGENT_NAME = None
-    
+
     def __init__(self):
         self.COMMON_UTILS = CommonUtils()
         self.AGENT_NAME = self.COMMON_UTILS.getAgentName()
         return
-    
+
     '''
     search for the title on the Jikan API
     '''
     def search(self, title, results, lang):
-        
+
         # match the search title for a specific myanimelist-id
-        manualId = self.COMMON_UTILS.getRegExMatch("^myanimelist-id:([0-9]+)$", str(title), 1)
+        manualId = self.COMMON_UTILS.getRegExMatch("\[mal-([0-9]+)\]$", str(title), 1)
+
         manualMatch = False
         searchUrl = None
-        
+
         # manual match with a myanimelist ID or general search for the title
         if manualId:
-            
+
             Log.Info("[" + self.AGENT_NAME + "] " + "Searching on Jikan for ID: '" + str(manualId) + "'")
-            
+
             manualMatch = True
             searchUrl = self.API_MAIN + self.API_DETAILS.format(id=str(manualId))
         else:
             Log.Info("[" + self.AGENT_NAME + "] " + "Searching on Jikan for name: '" + str(title) + "'")
-            
+
             searchUrl = self.API_MAIN + self.API_SEARCH.format(title=String.Quote(title, usePlus=True))
-        
+
         searchResult = JSON.ObjectFromString(self.COMMON_UTILS.getResponse(searchUrl))
-        
+
         # manual match request the details page and have a different data Structure
         if manualMatch:
-            Log.Debug("[" + self.AGENT_NAME + "] " + "Parsing match with myanimelist ID")
-            
-            apiMal_id = str(self.COMMON_UTILS.getJsonValue("mal_id", searchResult))
-            apiTitle = str(self.COMMON_UTILS.getJsonValue("title", searchResult))
-            apiAired = str(self.COMMON_UTILS.getYear("from", searchResult["aired"]))
+            Log.Debug("[" + self.AGENT_NAME + "] " + "Parsing match with specific MyAnimeList ID")
+
+            data = searchResult['data']
+
+            apiMal_id = str(self.COMMON_UTILS.getJsonValue("mal_id", data))
+            apiTitle = str(self.COMMON_UTILS.getJsonValue("title", data))
+            apiAired = str(self.COMMON_UTILS.getYear("from", data["aired"]))
             matchScore = 100
-            
+
             Log.Debug("[" + self.AGENT_NAME + "] " + "ID=" + str(apiMal_id) + " Title='" + str(apiTitle) + "' Year=" + str(apiAired) + " MatchScore=" + str(matchScore))
-            
+
             results.Append(MetadataSearchResult(id=apiMal_id, name=apiTitle, year=apiAired, score=matchScore, lang=lang))
         else:
             Log.Debug("[" + self.AGENT_NAME + "] " + "Parsing search results")
             resultsArray = searchResult["data"]
-            
+
             Log.Info("[" + self.AGENT_NAME + "] " + str(len(resultsArray)) + " Results found")
-            
+
             for show in resultsArray:
                 apiMal_id = str(self.COMMON_UTILS.getJsonValue("mal_id", show))
                 apiTitle = str(self.COMMON_UTILS.getJsonValue("title", show))
                 apiAired = str(self.COMMON_UTILS.getYear("from", show["aired"]))
                 matchScore = self.COMMON_UTILS.calcMatchScore(title, apiTitle)
-                
+
                 Log.Debug("[" + self.AGENT_NAME + "] " + "ID=" + str(apiMal_id) + " Title='" + str(apiTitle) + "' Year=" + str(apiAired) + " MatchScore=" + str(matchScore))
-                
+
                 results.Append(MetadataSearchResult(id=apiMal_id, name=apiTitle, year=apiAired, score=matchScore, lang=lang))
-        
+
         return
-    
+
     '''
     get the metadata details for the specific MyAnimeList ID from the Jikan API
     '''
     def getDetails(self, metadata):
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting detailed Information from Jikan")
-        
+
         detailsUrl = self.API_MAIN + self.API_DETAILS.format(id=metadata.id)
         detailResponse = self.COMMON_UTILS.getResponse(detailsUrl)
 
@@ -211,7 +214,7 @@ class JikanApiUtils:
             Log.Warn("[" + self.AGENT_NAME + "] " + "There was an error requesting a response from the Jikan API")
 
         return
-    
+
     '''
     get the episodes for a specific MyAnimeList ID
     '''
@@ -286,10 +289,10 @@ class JikanApiUtils:
     '''
     def getPictures(self, metadata):
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Pictures from Jikan")
-        
+
         ## Wait 0.5 seconds to not go beyond the rate limit of the Jikan API
         time.sleep(0.5)
-        
+
         picturesUrl = self.API_MAIN + self.API_PICTURES.format(id=metadata.id)
         pictureResponse = self.COMMON_UTILS.getResponse(picturesUrl)
 
@@ -315,7 +318,7 @@ class JikanApiUtils:
             Log.Warn("[" + self.AGENT_NAME + "] " + "Pictures were not available or there was an error retrieving them")
 
         return
-    
+
     '''
     get the Character of the anime
     Note: a single Character can have multiple Voice Actors
@@ -324,10 +327,10 @@ class JikanApiUtils:
     '''
     def getCharacters(self, metadata):
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Staff information from Jikan")
-        
+
         preferredVaLanguage = str(Prefs["actorLanguage"])
         preferredCharacterImage = str(Prefs["actorImage"])
-        
+
         ## Wait 0.5 seconds to not go beyond the rate limit of the Jikan API
         time.sleep(0.5)
 

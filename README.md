@@ -68,8 +68,8 @@ Some metadata can be configured through the Metadata Agent Settings:
 
 (4) The Photo of the Role can be set to be either the Voice actor that voiced the role or the character
 
-For some roles, a character was voiced by multiple voice actors (for example, at different ages). 
-However, there is no distinction between those characters and their voice actors with, for example, a dedicated image. 
+For some roles, a character was voiced by multiple voice actors (for example, at different ages).
+However, there is no distinction between those characters and their voice actors with, for example, a dedicated image.
 So there is no way to tell which Character image would be related to a certain voice actor. Therefore, the agent will just pick the first one.
 
 Since the Roles in Plex are shared across the whole library and not specifically for the Library item (probably to allow you to click on the Role and then have a filter for every Library item that this Actor played in) Character Photos will be overwritten by the last instance you ran a metadata refresh.
@@ -94,7 +94,7 @@ TheMovieDB is still free to use but I decided that the user should provide their
 
 you will need to have an Account for both TheTVDB and TheMovieDB
 
-##### TheTVDB 
+##### TheTVDB
 
 1. Create and Login to TheTVDB and go to your Dashboard.
 2. under Account -> Subscription you can subscribe to TheTVDB which will give you an "Subscriber PIN"
@@ -128,13 +128,13 @@ The Agent accepts the following Metadata Agents:
 * [XBMCnfoTVImporter](https://github.com/gboudreau/XBMCnfoTVImporter.bundle)
 * [HTTP Anidb Metadata Agent (HAMA)](https://github.com/ZeroQI/Hama.bundle/)
 
-Please note that not every Agent is necessarily compatible with each other. 
+Please note that not every Agent is necessarily compatible with each other.
 
 ### Mapping:
 
 To provide a way to get the additional images from TheTVDB and/or TheMovieDB the agent will use a list of IDs of mappings between different websites.
 
-See my [anime-list Project](https://github.com/Fribb/anime-lists) for more information and contribution. 
+See my [anime-list Project](https://github.com/Fribb/anime-lists) for more information and contribution.
 
 ## Installation
 
@@ -142,7 +142,7 @@ See my [anime-list Project](https://github.com/Fribb/anime-lists) for more infor
 
 Download the Agent [here](https://fribbtastic.net/projects/myanimelistagent/)
 
-Installation is straight forward, place the MyAnimeList.bundle folder into the directories (depending on your OS) listed below and restart your Plex Media Server (Note: Plex only loads the Agent on restart!).  
+Installation is straight forward, place the MyAnimeList.bundle folder into the directories (depending on your OS) listed below and restart your Plex Media Server (Note: Plex only loads the Agent on restart!).
 
 Directories:
 
@@ -159,21 +159,36 @@ Therefore I recommend using scanners that follow this format:
 * [Better ABsolute Scanner (BABS)](https://forums.plex.tv/discussion/31081/better-absolute-scanner-babs/p1)
 * [Absolute Series Scanner](https://github.com/ZeroQI/Absolute-Series-Scanner)
 
-In this case I recommend the Better Absolute Scanner (BABS).
-The reason for this is that BABS will add your Anime Folders with a name that is closer to what is actually in your filesystem.
+Which scanner you use is up to you but there are some things that you should know:
 
-For Example:
+The 'Better Absolute Scanner (BABS)' is not able to identify episodes with a 4 digit episode number, episodes above and including 1000 would not be added to your library.
+The 'Absolute Series Scanner (ASS)', on the other hand, will add those episodes with 4 digit episode number to your library, but it will also remove anything in brackets like `(TV)` from the title.
 
-* Folder: Big Order (TV)
-* MyAnimeList Title: Big Order (TV)
-* Added Library Item with BABS: Big Order (TV) (First Result: Big Order (TV) - Match Score 100%)
-* Added Library Item with ASS: Big Order (first result: Big Order - Match Score 100%)
+This can lead to a matching problem. An example:
 
-This is a great example to demonstrate the Problem.
-The Folder represents the TV Version of Big Order (ID=31904), however, there is also an OVA version available (ID=30137).
-With ASS removing the (TV) part it will create a 100% match to the incorrect Anime. This mismatch would create a library item with no Episode information (because the OVA only has one)
+* Big Order (TV) - MAL-ID=31904
+* Big Order - MAL-ID=30137
 
-On the other hand, BABS does not recognize any episode with 4 numbers, for example 1000.
+As you can see, those are two different releases one (30137) being the OVA version while the other (31904) is the TV version.
+If you now would have your folder named according to my recommendation `Big Order (TV)` the following would happen:
+
+* By using BABS a new Library item with the title `Big Order (TV)` would be created and matched to the correct MAL-ID 31904
+* By using ASS a new Library item with the title `Big Order` would be created and matched to the incorrect MAL-ID 30137
+
+The result of this would be that you would still have a somewhat similar Show metadata in Plex but no Episode title.
+
+#### Force a Match
+
+To circumvent the Problem described above, the Absolute Series Scanner offers the ability to leave GUIDs in the show title.
+This will enable you to add the MyAnimeList ID to the folder directly which is then used to match the Anime specifically to that release
+
+This also includes the manual match in which the notation is the same, the notation is as follows
+
+`[mal-<mal_id>]`
+
+Example:
+
+The Anime `91 Days` has the ID `32998` the correct name for your folder or a manual search/match would then be `91 Days [mal-32998]`
 
 ## Support:
 
