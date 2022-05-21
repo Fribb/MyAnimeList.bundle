@@ -153,7 +153,7 @@ class JikanApiUtils:
 
                 # get the main poster from the JSON response and add it to the metadata
                 images = self.COMMON_UTILS.getJsonValue("images", data)
-                apiMainPoster = self.COMMON_UTILS.getJsonValue("image_url", images["jpg"])
+                apiMainPoster = self.COMMON_UTILS.getJsonValue("large_image_url", images["jpg"])
                 if apiMainPoster is not None:
                     Log.Debug("[" + self.AGENT_NAME + "] " + "Main Poster: " + str(apiMainPoster))
                     if metadata.posters[str(apiMainPoster)] is None:
@@ -299,7 +299,7 @@ class JikanApiUtils:
 
             if data is not None:
                 for picture in data:
-                    image = self.COMMON_UTILS.getJsonValue("image_url", picture["jpg"])
+                    image = self.COMMON_UTILS.getJsonValue("large_image_url", picture["jpg"])
 
                     Log.Debug("[" + self.AGENT_NAME + "] " + "Poster: " + str(image))
 
