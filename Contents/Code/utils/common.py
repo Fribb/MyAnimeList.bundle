@@ -178,7 +178,7 @@ class CommonUtils:
     get the current Date
     '''
     def getNowDate(self):
-        return Datetime.Now()
+        return Datetime.Now().date()
 
     '''
     get the regular expression match from a string
