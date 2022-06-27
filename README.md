@@ -11,8 +11,8 @@ The MyAnimeList Metadata Agent interacts with the [Jikan API](https://jikan.moe/
 
 ### Privacy
 
-The accessed Jikan API is running on my own server which will log the access with your IP and the API endpoints for each request, this is necessary for security reasons.
-The Log files are being rotated daily and those rotations will only contain anonymized IP-Addresses. That means that the server only stores your IP address for a day.
+The Agent is accessing the Jikan API, requests are done from your Plex server directly to the Jikan API endpoints.
+Any concerns or questions about Privacy should be directed to the Jikan API.
 
 ### Metadata Information being used
 
