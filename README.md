@@ -54,7 +54,6 @@ After a search is being done the best search result (the first search result wit
     * Role: The role that the Voice Actor voiced
     * Photo: The Photo for the Character (4)
 
-
 ----
 **Note:**
 
@@ -189,6 +188,32 @@ This also includes the manual match in which the notation is the same, the notat
 Example:
 
 The Anime `91 Days` has the ID `32998` the correct name for your folder or a manual search/match would then be `91 Days [mal-32998]`
+
+#### Force a Match with a .match file
+
+This feature is similar to the [Match hinting with a .plexmatch](https://support.plex.tv/articles/plexmatch/) file.
+Since I didn't want it to be Plex-specific, the Agent will read a .match file from the Show/Movie folder. Example:
+
+* Anime (Library)
+  * 91 Days
+    * .match 
+    * 91 Days - 01.ext
+
+Currently, the Agent will only check for 2 values `title` and `guid`, the `guid` is prioritized so that if a GUID is set, the Agent will force a match to that ID.
+
+A Match file could therefore look something like this:
+
+```
+title: 91 Days
+guid: 32998
+```
+
+With Applications like FileBot or ShokoServer that can rename your files automatically and that use AniDB,
+in most situations the title provided by AniDB should result in a decent match on MyAnimeList.
+However, in some situations the returned Title will just have too many differences from what the Agent can comfortably
+use as a title.
+
+This feature should circumvent this problematic so that you can just add a .match file into the Folder without having to modify the title.
 
 ## Support:
 

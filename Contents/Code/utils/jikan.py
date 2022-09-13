@@ -34,7 +34,7 @@ class JikanApiUtils:
 
         # get the Title in the language the user prefers
         preferredTitle = "Default"
-        if (not Prefs["excludePreferredTitleFromSearch"]):
+        if not Prefs["excludePreferredTitleFromSearch"]:
             preferredTitle = str(Prefs["preferredTitle"])
 
         # manual match with a myanimelist ID or general search for the title

@@ -3,6 +3,7 @@ from jikan import JikanApiUtils
 from thetvdb import TheTvDbUtils
 from themoviedb import TheMovieDbUtils
 import socket
+import os
 
 class MyAnimeListAgent:
 
@@ -32,13 +33,34 @@ class MyAnimeListAgent:
     def search(self, results, media, lang, manual, type):
         Log.Info("[" + self.AGENT_NAME + "] " + "Searching for Anime")
 
+        mediaFolder = None
+
         # check the media type because the title is not in the same location
         if type == "show":
             title = self.COMMON_UTILS.removeAscii(media.show)
+            mediaFolder = self.COMMON_UTILS.getMediaDirectory(media, "show")
         elif type == "movie":
             title = self.COMMON_UTILS.removeAscii(media.name)
+            mediaFolder = self.COMMON_UTILS.getMediaDirectory(media, "movie")
         else:
             Log.Error("[" + self.AGENT_NAME + "] " + "No type defined, don't know which name to pick")
+
+        if mediaFolder is not None:
+            matchFileLocation = os.path.join(mediaFolder, ".match")
+
+        if Data.Exists(matchFileLocation):
+            Log.Info("[" + self.AGENT_NAME + "] " + ".match file found")
+            matchFileDict = self.COMMON_UTILS.readMatchFile(matchFileLocation)
+
+            if "guid" in matchFileDict:
+                # the MyAnimeList ID is available in the .match file
+                title = title + "[mal-" + matchFileDict['guid'] + "]"
+            elif "title" in matchFileDict:
+                # a title is available in the .match file, use that instead of the media title
+                title = matchFileDict['title']
+
+        else:
+            Log.Debug("[" + self.AGENT_NAME + "] " + "No .match file found")
 
         self.JIKAN_UTILS.search(title, results, lang)
 

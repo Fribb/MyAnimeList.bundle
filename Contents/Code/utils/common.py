@@ -254,3 +254,33 @@ class CommonUtils:
 
         # fallback to default
         return defaultTitle
+
+    '''
+    Get the main Directory of the Media 
+    '''
+    def getMediaDirectory(self, media, type):
+        if (type == "show"):
+            return os.path.dirname(media.seasons[1].episodes[1].items[0].parts[0].file)
+        elif (type == "movie"):
+            return os.path.dirname(media.items[0].parts[0].file)
+        else:
+            return None
+    '''
+    read the .match file and return a dictionary with the key/value pairs
+    '''
+    def readMatchFile(self, path):
+        try:
+            matchValues = {}
+
+            for elem in Data.Load(path).split("\n"):
+                elem = elem.replace("\r", "")
+                if elem.startswith('title'):
+                    matchValues['title'] = elem.replace("title: ","")
+                if elem.startswith('guid'):
+                    matchValues['guid'] = elem.replace("guid: ","")
+
+            return matchValues
+
+        except Exception as e:
+            Log.Error("[" + self.AGENT_NAME + "] " + "Error reading .match file '" + str(e) + "'")
+            return None
