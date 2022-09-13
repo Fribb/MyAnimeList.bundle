@@ -233,3 +233,24 @@ class CommonUtils:
         except Exception as e:
             Log.Error("[" + self.AGENT_NAME + "] " + "Image could not be requested: " + str(e))
             return None
+
+    '''
+    Get the specific title for the selected language from the available titles list
+    '''
+    def getTitle(self, titlesJsonArray, preferred):
+
+        defaultTitle = ""
+
+        # get the title in the preferred language
+        for elem in titlesJsonArray:
+            type = self.getJsonValue("type", elem)
+            title = self.getJsonValue("title", elem)
+
+            if (type == "Default"):
+                defaultTitle = title
+
+            if (type == preferred):
+                return title
+
+        # fallback to default
+        return defaultTitle

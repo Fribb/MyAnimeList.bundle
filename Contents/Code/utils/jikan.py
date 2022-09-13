@@ -32,6 +32,11 @@ class JikanApiUtils:
         manualMatch = False
         searchUrl = None
 
+        # get the Title in the language the user prefers
+        preferredTitle = "Default"
+        if (not Prefs["excludePreferredTitleFromSearch"]):
+            preferredTitle = str(Prefs["preferredTitle"])
+
         # manual match with a myanimelist ID or general search for the title
         if manualId:
 
@@ -53,7 +58,7 @@ class JikanApiUtils:
             data = searchResult['data']
 
             apiMal_id = str(self.COMMON_UTILS.getJsonValue("mal_id", data))
-            apiTitle = str(self.COMMON_UTILS.getJsonValue("title", data))
+            apiTitle = self.COMMON_UTILS.getTitle(self.COMMON_UTILS.getJsonValue("titles", data), preferredTitle)
             apiAired = str(self.COMMON_UTILS.getYear("from", data["aired"]))
             matchScore = 100
 
@@ -68,7 +73,7 @@ class JikanApiUtils:
 
             for show in resultsArray:
                 apiMal_id = str(self.COMMON_UTILS.getJsonValue("mal_id", show))
-                apiTitle = str(self.COMMON_UTILS.getJsonValue("title", show))
+                apiTitle = self.COMMON_UTILS.getTitle(self.COMMON_UTILS.getJsonValue("titles", show), preferredTitle)
                 apiAired = str(self.COMMON_UTILS.getYear("from", show["aired"]))
                 matchScore = self.COMMON_UTILS.calcMatchScore(title, apiTitle)
 
@@ -100,27 +105,12 @@ class JikanApiUtils:
                 else:
                     Log.Warn("[" + self.AGENT_NAME + "] " + "ID was not available ")
 
-                # get the Title that the user desires from the JSON response and add it to the metadata, if that title isn't available then default to the main
+                # get the Title in the language the user prefers
                 preferredTitle = str(Prefs["preferredTitle"])
-                titleLanguage = None
 
-                if preferredTitle == "Japanese":
-                    titleLanguage = "title_japanese"
-                elif preferredTitle == "English":
-                    titleLanguage = "title_english"
-                else:
-                    titleLanguage = "title"
-
-                apiTitle = self.COMMON_UTILS.getJsonValue(titleLanguage, data)
-                if apiTitle is not None:
-                    Log.Debug("[" + self.AGENT_NAME + "] " + "Title (" + preferredTitle + "): " + str(apiTitle))
-                    metadata.title = str(apiTitle)
-                else:
-                    Log.Warn("[" + self.AGENT_NAME + "] " + "title for language (" + titleLanguage + ") could not be retrieved, falling back to main title")
-
-                    apiTitle = self.COMMON_UTILS.getJsonValue("title", data)
-                    metadata.title = str(apiTitle)
-                    Log.Debug("[" + self.AGENT_NAME + "] " + "Title: " + str(apiTitle))
+                apiTitle = self.COMMON_UTILS.getTitle(self.COMMON_UTILS.getJsonValue("titles", data), preferredTitle)
+                Log.Debug("[" + self.AGENT_NAME + "] " + "Title (" + preferredTitle + "): " + str(apiTitle))
+                metadata.title = str(apiTitle)
 
                 # get the summary from the JSON response and add it to the metadata
                 apiSummary = self.COMMON_UTILS.getJsonValue("synopsis", data)

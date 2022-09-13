@@ -13,6 +13,7 @@ def ValidatePrefs():
     Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Validating Preferences")
     
     Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Preferred Title Language: " + str(Prefs["preferredTitle"]))
+    Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Exclude Preferred Title Language from search: " + str(Prefs["excludePreferredTitleFromSearch"]))
     Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Preferred Staff Image: " + str(Prefs["actorImage"]))
     Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Preferred Staff Language: " + str(Prefs["actorLanguage"]))
     Log.Info("[" + COMMON_UTILS.getAgentName() + "] " + "Preferred Image Source for Shows: " + str(Prefs["tvshowImageSource"]))

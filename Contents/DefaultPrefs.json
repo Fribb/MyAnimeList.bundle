@@ -4,11 +4,17 @@
 		"label": "Preferred Title Language",
 		"type": "enum",
 		"values": [
-			"main",
+			"Default",
 			"Japanese",
 			"English"
 		],
-		"default": "main"
+		"default": "Default"
+	},
+	{
+		"id": "excludePreferredTitleFromSearch",
+		"label": "Exclude the Preferred title from search (Search will use the main title for matching)",
+		"type": "bool",
+		"default": "true"
 	},
 	{
 		"id": "actorImage",
