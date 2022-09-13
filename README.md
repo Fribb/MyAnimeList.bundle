@@ -225,4 +225,4 @@ For development stages, release information, download link or anything else you 
 
 [See the Wiki Page for the FAQ](https://github.com/Fribb/MyAnimeList.bundle/wiki/Frequently-Asked-Questions)
 
-We also have a [Discord Server](https://discord.gg/drHgfgC6)
+We also have a [Discord Server](https://discord.gg/4qMRaQeA9m)
