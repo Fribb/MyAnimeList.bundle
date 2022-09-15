@@ -276,9 +276,10 @@ class CommonUtils:
                 elem = elem.replace("\r", "")
                 if elem.startswith('title'):
                     matchValues['title'] = elem.replace("title: ","")
-                if elem.startswith('guid'):
-                    matchValues['guid'] = elem.replace("guid: ","")
+                if elem.startswith('mal-id'):
+                    matchValues['mal-id'] = elem.replace("mal-id: ","")
 
+            Log.Debug("[" + self.AGENT_NAME + "] " + ".match values: " + str(matchValues))
             return matchValues
 
         except Exception as e:

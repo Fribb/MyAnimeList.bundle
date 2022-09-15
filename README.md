@@ -199,13 +199,13 @@ Since I didn't want it to be Plex-specific, the Agent will read a .match file fr
     * .match 
     * 91 Days - 01.ext
 
-Currently, the Agent will only check for 2 values `title` and `guid`, the `guid` is prioritized so that if a GUID is set, the Agent will force a match to that ID.
+Currently, the Agent will only check for 2 values `title` and `mal-id`, the `mal-id` is prioritized so that if a GUID is set, the Agent will force a match to that ID.
 
 A Match file could therefore look something like this:
 
 ```
 title: 91 Days
-guid: 32998
+mal-id: 32998
 ```
 
 With Applications like FileBot or ShokoServer that can rename your files automatically and that use AniDB,

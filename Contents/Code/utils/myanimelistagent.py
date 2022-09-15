@@ -52,9 +52,9 @@ class MyAnimeListAgent:
             Log.Info("[" + self.AGENT_NAME + "] " + ".match file found")
             matchFileDict = self.COMMON_UTILS.readMatchFile(matchFileLocation)
 
-            if "guid" in matchFileDict:
+            if "mal-id" in matchFileDict:
                 # the MyAnimeList ID is available in the .match file
-                title = title + "[mal-" + matchFileDict['guid'] + "]"
+                title = title + "[mal-" + matchFileDict['mal-id'] + "]"
             elif "title" in matchFileDict:
                 # a title is available in the .match file, use that instead of the media title
                 title = matchFileDict['title']
