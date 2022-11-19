@@ -48,19 +48,18 @@ class MyAnimeListAgent:
         if mediaFolder is not None:
             matchFileLocation = os.path.join(mediaFolder, ".match")
 
-        if Data.Exists(matchFileLocation):
-            Log.Info("[" + self.AGENT_NAME + "] " + ".match file found")
-            matchFileDict = self.COMMON_UTILS.readMatchFile(matchFileLocation)
+            if Data.Exists(matchFileLocation):
+                Log.Info("[" + self.AGENT_NAME + "] " + ".match file found")
+                matchFileDict = self.COMMON_UTILS.readMatchFile(matchFileLocation)
 
-            if "mal-id" in matchFileDict:
-                # the MyAnimeList ID is available in the .match file
-                title = title + "[mal-" + matchFileDict['mal-id'] + "]"
-            elif "title" in matchFileDict:
-                # a title is available in the .match file, use that instead of the media title
-                title = matchFileDict['title']
-
-        else:
-            Log.Debug("[" + self.AGENT_NAME + "] " + "No .match file found")
+                if "mal-id" in matchFileDict:
+                    # the MyAnimeList ID is available in the .match file
+                    title = title + "[mal-" + matchFileDict['mal-id'] + "]"
+                elif "title" in matchFileDict:
+                    # a title is available in the .match file, use that instead of the media title
+                    title = matchFileDict['title']
+            else:
+                Log.Debug("[" + self.AGENT_NAME + "] " + "No .match file found")
 
         self.JIKAN_UTILS.search(title, results, lang)
 

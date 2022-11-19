@@ -259,12 +259,23 @@ class CommonUtils:
     Get the main Directory of the Media 
     '''
     def getMediaDirectory(self, media, type):
+
         if (type == "show"):
-            return os.path.dirname(media.seasons[1].episodes[1].items[0].parts[0].file)
+            # check if the request came from the first season
+            seasons = media.seasons
+            if 1 in seasons:
+                available_episodes = media.seasons[1].episodes.keys()
+
+                return os.path.dirname(media.seasons[1].episodes[available_episodes[0]].items[0].parts[0].file)
+            else:
+                Log.Warn("Unsupported file/folder Structure, Metadata Request for a Season other than '1'")
+                return None
+
         elif (type == "movie"):
             return os.path.dirname(media.items[0].parts[0].file)
         else:
             return None
+
     '''
     read the .match file and return a dictionary with the key/value pairs
     '''
