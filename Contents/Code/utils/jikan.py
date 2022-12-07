@@ -177,6 +177,26 @@ class JikanApiUtils:
                 else:
                     Log.Warn("[" + self.AGENT_NAME + "] " + "Genres were not available ")
 
+                # get the themes from the JSON response and add it to the metadata
+                apiThemes = self.COMMON_UTILS.getJsonValue("themes", data)
+                if apiThemes is not None:
+                    themesArray = self.COMMON_UTILS.getArrayFromJsonValue("name", apiThemes)
+                    Log.Debug("[" + self.AGENT_NAME + "] " + "Theme: " + str(themesArray))
+                    for theme in themesArray:
+                        metadata.genres.add(str(theme))
+                else:
+                    Log.Warn("[" + self.AGENT_NAME + "] " + "Themes were not available ")
+
+                # get the demographic from the JSON response and add it to the metadata
+                apiDemographic = self.COMMON_UTILS.getJsonValue("demographics", data)
+                if apiDemographic is not None:
+                    demographicArray = self.COMMON_UTILS.getArrayFromJsonValue("name", apiDemographic)
+                    Log.Debug("[" + self.AGENT_NAME + "] " + "Demographic: " + str(demographicArray))
+                    for demographic in demographicArray:
+                        metadata.genres.add(str(demographic))
+                else:
+                    Log.Warn("[" + self.AGENT_NAME + "] " + "Demographics were not available ")
+
                 # get the producers from the JSON response and add it to the metadata
                 # Note: producers are only set on an individual episodes or a Movie, not on a show or season
                 #apiProducers= self.COMMON_UTILS.getJsonValue("producers", data)
