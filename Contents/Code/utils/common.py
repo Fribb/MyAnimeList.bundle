@@ -21,7 +21,7 @@ class CommonUtils:
     ''' caching time for requests '''
     AGENT_CACHE_TIME = CACHE_1HOUR * 24
     ''' mapping file '''
-    AGENT_MAPPING_URL = "https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-full.json"
+    AGENT_MAPPING_URL = "https://raw.githubusercontent.com/Fribb/anime-lists/master/anime-list-mini.json"
     ''' headers '''
     AGENT_HEADERS = {'Content-type': 'application/json'}
 
