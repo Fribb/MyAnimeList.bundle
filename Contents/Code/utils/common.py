@@ -5,6 +5,7 @@ import sys
 import urllib2
 import ssl
 import difflib
+import json
 
 class CommonUtils:
     ''' the path to the VERSION file '''
@@ -197,7 +198,8 @@ class CommonUtils:
     def getMapping(self, id, key):
         Log.Info("[" + self.AGENT_NAME + "] " + "Requesting Mapping file")
 
-        mappingFull = JSON.ObjectFromString(self.getResponse(self.getMappingUrl()))
+        '''mappingFull = JSON.ObjectFromString(self.getResponse(self.getMappingUrl()))'''
+        mappingFull = json.loads(self.getResponse(self.getMappingUrl()))
 
         if mappingFull is not None:
             mappingkey = str(key) + "_id"
